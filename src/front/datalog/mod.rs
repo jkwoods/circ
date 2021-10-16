@@ -158,6 +158,7 @@ impl<'ast> Gen<'ast> {
             .get_value(Loc::local(i.value.to_owned()))?
             .unwrap_term())
     }
+
     /// Generate IR for an expression.
     ///
     /// * `top_level` indicates whether this expression is a top-level expression in a condition.
@@ -288,6 +289,27 @@ impl<'ast> Gen<'ast> {
             ast::UnaryOperator::Neg(_) => term::neg(&l),
         };
         res.map_err(|err| Error::new(err, e.span.clone()))
+    }
+
+    // Begin prim-rec linting
+    fn lint_rules(&mut self) {
+    }
+
+    fn lint_rule(&mut self, rule: &'ast ast::Rule_) -> term::T {
+        if let (arg_idx, _) = rule.args.iter().enumerate().find(|(i, arg)| arg.dec.is_some()) {
+            let mut bug_conditions = Vec::new();
+            for cond in &rule.conds {
+                for atom in &cond.exprs {
+                    if let ast::Expression::Call(c) = &atom {
+                        if &c.fn_name.value == &rule.name.value {
+                            
+                        }
+                    }
+                }
+            }
+        } else {
+            term::bool_lit(false)
+        }
     }
 }
 

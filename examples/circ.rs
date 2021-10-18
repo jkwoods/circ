@@ -5,12 +5,13 @@ use bls12_381::Scalar;
 use circ::front::datalog::{self, Datalog};
 use circ::front::zokrates::{self, Mode, Zokrates};
 use circ::front::FrontEnd;
-use circ::ir::opt::{opt, Opt};
+use circ::ir::{opt::{opt, Opt}, term::extras::Letified};
 use circ::target::aby::output::write_aby_exec;
 use circ::target::aby::trans::to_aby;
 use circ::target::ilp::trans::to_ilp;
 use circ::target::r1cs::opt::reduce_linearities;
 use circ::target::r1cs::trans::to_r1cs;
+use circ::target::smt::find_model;
 use clap::arg_enum;
 use env_logger;
 use good_lp::default_solver;
@@ -45,6 +46,10 @@ struct Options {
     /// How many recursions to allow (datalog)
     #[structopt(short, long, name = "N", default_value = "5")]
     rec_limit: usize,
+
+    /// Lint recursions that are allegedly primitive recursive (datalog)
+    #[structopt(long)]
+    lint_prim_rec: bool,
 }
 
 arg_enum! {
@@ -84,6 +89,7 @@ fn main() {
             let inputs = datalog::Inputs {
                 file: options.zokrates_path,
                 rec_limit: options.rec_limit,
+                lint_prim_rec: options.lint_prim_rec,
             };
             Datalog::gen(inputs)
         }
@@ -102,11 +108,11 @@ fn main() {
                 Opt::Sha,
                 Opt::ConstantFold,
                 Opt::Flatten,
-                Opt::FlattenAssertions,
+                //Opt::FlattenAssertions,
                 Opt::Inline,
                 Opt::Mem,
                 Opt::Flatten,
-                Opt::FlattenAssertions,
+                //Opt::FlattenAssertions,
                 Opt::ConstantFold,
                 Opt::Inline,
             ],
@@ -114,29 +120,45 @@ fn main() {
     };
     println!("Done with IR optimization");
 
-    match mode {
-        Mode::Proof => {
-            println!("Converting to r1cs");
-            let r1cs = to_r1cs(cs, circ::front::zokrates::ZOKRATES_MODULUS.clone());
-            println!("Pre-opt R1cs size: {}", r1cs.constraints().len());
-            let r1cs = reduce_linearities(r1cs);
-            println!("Final R1cs size: {}", r1cs.constraints().len());
+    if options.lint_prim_rec {
+        assert_eq!(cs.outputs.len(), 1);
+        match find_model(&cs.outputs[0]) {
+            Some(m) => {
+                println!("Not primitive recursive!");
+                for (var, val) in m {
+                    println!("{} -> {}", var, val);
+                }
+                panic!()
+            }
+            None => {
+                println!("Primitive recursive");
+            }
         }
-        Mode::Mpc(_) => {
-            println!("Converting to aby");
-            let aby = to_aby(cs);
-            write_aby_exec(aby, path_buf);
-        }
-        Mode::Opt => {
-            println!("Converting to ilp");
-            let ilp = to_ilp(cs);
-            let solver_result = ilp.solve(default_solver);
-            let (max, vars) = solver_result.expect("ILP could not be solved");
-            println!("Max value: {}", max.round() as u64);
-            println!("Assignment:");
+    } else {
+        match mode {
+            Mode::Proof => {
+                println!("Converting to r1cs");
+                let r1cs = to_r1cs(cs, circ::front::zokrates::ZOKRATES_MODULUS.clone());
+                println!("Pre-opt R1cs size: {}", r1cs.constraints().len());
+                let r1cs = reduce_linearities(r1cs);
+                println!("Final R1cs size: {}", r1cs.constraints().len());
+            }
+            Mode::Mpc(_) => {
+                println!("Converting to aby");
+                let aby = to_aby(cs);
+                write_aby_exec(aby, path_buf);
+            }
+            Mode::Opt => {
+                println!("Converting to ilp");
+                let ilp = to_ilp(cs);
+                let solver_result = ilp.solve(default_solver);
+                let (max, vars) = solver_result.expect("ILP could not be solved");
+                println!("Max value: {}", max.round() as u64);
+                println!("Assignment:");
 
-            for (var, val) in &vars {
-                println!("  {}: {}", var, val.round() as u64);
+                for (var, val) in &vars {
+                    println!("  {}: {}", var, val.round() as u64);
+                }
             }
         }
     }

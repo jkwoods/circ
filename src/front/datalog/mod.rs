@@ -31,6 +31,8 @@ pub struct Inputs {
     pub file: PathBuf,
     /// How many recursions to tolerate
     pub rec_limit: usize,
+    /// Should we lint primitive recursions?
+    pub lint_prim_rec: bool,
 }
 
 struct Gen<'ast> {
@@ -123,8 +125,7 @@ impl<'ast> Gen<'ast> {
         for d in &rule.args {
             let (ty, public) = self.ty(&d.ty);
             let vis = if public { PUBLIC_VIS } else { PROVER_VIS };
-            self.circ
-                .declare(d.ident.value.into(), &ty, public, vis)?;
+            self.circ.declare(d.ident.value.into(), &ty, public, vis)?;
         }
         let r = self.rule_cases(&rule)?;
         self.exit_function(name);
@@ -292,23 +293,83 @@ impl<'ast> Gen<'ast> {
     }
 
     // Begin prim-rec linting
-    fn lint_rules(&mut self) {
+    fn lint_rules(&mut self) -> Result<()> {
+        let rules: Vec<&'ast ast::Rule_> = self.rules.values().cloned().collect();
+        let bug_if = rules.iter().try_fold(term::bool_lit(false), |x, rule| {
+            let cond = self.lint_rule(rule)?;
+            term::or(&x, &cond).map_err(|e| Error::from(e).with_span(rule.span.clone()))
+        })?;
+        self.circ.assert(bug_if.as_bool());
+        Ok(())
     }
 
-    fn lint_rule(&mut self, rule: &'ast ast::Rule_) -> term::T {
-        if let (arg_idx, _) = rule.args.iter().enumerate().find(|(i, arg)| arg.dec.is_some()) {
-            let mut bug_conditions = Vec::new();
+    fn lint_rule(&mut self, rule: &'ast ast::Rule_) -> Result<'ast, term::T> {
+        if let Some((arg_idx, _)) = rule
+            .args
+            .iter()
+            .enumerate()
+            .find(|(_, arg)| arg.dec.is_some())
+        {
+            self.enter_function(&rule.name.value, None);
+            for d in &rule.args {
+                let (ty, public) = self.ty(&d.ty);
+                let vis = if public { PUBLIC_VIS } else { PROVER_VIS };
+                self.circ.declare(d.ident.value.into(), &ty, public, vis)?;
+            }
+            let mut bug_in_rule_if_any = Vec::new();
             for cond in &rule.conds {
+                let mut bug_conditions = Vec::new();
+                debug!("Start case: {}", &rule.name.value);
+                self.circ.enter_scope();
+                if let Some(decls) = cond.existential.as_ref() {
+                    for d in &decls.declarations {
+                        let (ty, _public) = self.ty(&d.ty);
+                        self.circ.declare(d.ident.value.into(), &ty, false, None)?;
+                    }
+                }
+                let mut bad_recursion = Vec::new();
                 for atom in &cond.exprs {
                     if let ast::Expression::Call(c) = &atom {
                         if &c.fn_name.value == &rule.name.value {
-                            
+                            let formal_arg = self
+                                .circ
+                                .get_value(Loc::local(rule.args[arg_idx].ident.value.to_owned()))?
+                                .unwrap_term();
+                            let actual_arg = self.expr(&c.args[arg_idx], false)?;
+                            let bug_cond = term::gte(&actual_arg, &formal_arg)?;
+                            debug!("Bug if: {}", bug_cond);
+                            bad_recursion.push(bug_cond);
+                            continue;
                         }
                     }
+                    let force = self.expr(atom, true)?;
+                    debug!("Force: {}", force);
+                    bug_conditions.push(force);
                 }
+                bug_in_rule_if_any.push(term::and(
+                    &bug_conditions
+                        .into_iter()
+                        .try_fold(term::bool_lit(true), |x, y| {
+                            term::and(&x, &y)
+                                .map_err(|e| Error::from(e).with_span(rule.span.clone()))
+                        })?,
+                    &bad_recursion
+                        .into_iter()
+                        .try_fold(term::bool_lit(false), |x, y| {
+                            term::or(&x, &y)
+                                .map_err(|e| Error::from(e).with_span(rule.span.clone()))
+                        })?,
+                )?);
+                self.circ.exit_scope();
             }
+            self.exit_function(&rule.name.value);
+            bug_in_rule_if_any
+                .into_iter()
+                .try_fold(term::bool_lit(false), |x, y| {
+                    term::or(&x, &y).map_err(|e| Error::from(e).with_span(rule.span.clone()))
+                })
         } else {
-            term::bool_lit(false)
+            Ok(term::bool_lit(false))
         }
     }
 }
@@ -332,7 +393,11 @@ impl FrontEnd for Datalog {
         };
         let mut g = Gen::new(i.rec_limit);
         g.register_rules(&ast);
-        let r = g.entry_rule("main");
+        let r = if i.lint_prim_rec {
+            g.lint_rules()
+        } else {
+            g.entry_rule("main")
+        };
         if let Err(e) = r {
             eprintln!("{}", e);
             panic!()

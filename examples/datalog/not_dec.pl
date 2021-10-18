@@ -6,7 +6,7 @@ hash(X: u8[5], Y: u8[5], decreasing n: u8) :-
     X[1] - X[2] = Z[1],
     X[2] | X[3] = Z[2],
     X[3] ^ X[4] = Z[3],
-    hash(Z, Y, n-0x01).
+    hash(Z, Y, n).
 
 main(X: private u8[5], Y: public u8[5]) :-
   hash(X, Y, 5).

@@ -86,8 +86,20 @@ fn main() {
 	Mode::Proof  => opt(
             cs,
             // vec![],
-            vec![Opt::Sha, Opt::ConstantFold, Opt::Mem, Opt::ConstantFold],
-        ),
+            vec![
+		Opt::Flatten,
+                Opt::Sha,
+                Opt::ConstantFold,
+                Opt::Flatten,
+                //Opt::FlattenAssertions,
+                Opt::Inline,
+                Opt::Mem,
+                Opt::Flatten,
+                //Opt::FlattenAssertions,
+                Opt::ConstantFold,
+                Opt::Inline,
+	    ],
+	),
 
         _ => unimplemented!(),
     };

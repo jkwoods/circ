@@ -18,7 +18,6 @@ use std::rc::Rc;
 use std::fmt::Display;
 use std::iter::ExactSizeIterator;
 
-#[derive(Debug)]
 struct BvEntry {
     width: usize,
     uint: Lc,
@@ -311,8 +310,8 @@ impl ToR1cs {
     fn embed_eq(&mut self, a: &Term, b: &Term) -> Lc {
         match check(a) {
             Sort::Bool => {
-                let a = self.get_bool(a); //.clone();
-                let b = self.get_bool(b); //.clone();
+                let a = self.get_bool(a).clone();
+                let b = self.get_bool(b).clone();
                 self.bits_are_equal(&a, &b)
             }
             Sort::BitVector(_) => {
@@ -333,7 +332,7 @@ impl ToR1cs {
                 }).collect();
                 let conj = term(Op::BoolNaryOp(BoolNaryOp::And), eqs);
                 self.embed(conj.clone());
-                self.get_bool(&conj) //.clone()
+                self.get_bool(&conj).clone()
             }
             s => panic!("Unimplemented sort for Eq: {:?}", s),
         }
@@ -355,15 +354,15 @@ impl ToR1cs {
                 Op::Const(Value::Bool(b)) => self.r1cs.zero() + *b as isize,
                 Op::Eq => self.embed_eq(&c.cs[0], &c.cs[1]),
                 Op::Ite => {
-                    let a = self.get_bool(&c.cs[0]); //.clone();
-                    let b = self.get_bool(&c.cs[1]); //.clone();
-                    let c = self.get_bool(&c.cs[2]); //.clone();
+                    let a = self.get_bool(&c.cs[0]).clone();
+                    let b = self.get_bool(&c.cs[1]).clone();
+                    let c = self.get_bool(&c.cs[2]).clone();
                     self.ite(a, b, &c)
                 }
                 Op::BoolMaj => {
-                    let a = self.get_bool(&c.cs[0]); //.clone();
-                    let b = self.get_bool(&c.cs[1]); //.clone();
-                    let c = self.get_bool(&c.cs[2]); //.clone();
+                    let a = self.get_bool(&c.cs[0]).clone();
+                    let b = self.get_bool(&c.cs[1]).clone();
+                    let c = self.get_bool(&c.cs[2]).clone();
                     // m = ab + bc + ca - 2abc
                     // m = ab + c(b + a - 2ab)
                     //   where i = ab
@@ -376,15 +375,15 @@ impl ToR1cs {
                     self.bool_not(a)
                 }
                 Op::Implies => {
-                    let a = self.get_bool(&c.cs[0]); //.clone();
-                    let b = self.get_bool(&c.cs[1]); //.clone();
+                    let a = self.get_bool(&c.cs[0]).clone();
+                    let b = self.get_bool(&c.cs[1]).clone();
                     let not_a = self.bool_not(&a);
                     self.nary_or(vec![not_a, b].into_iter())
                 }
                 Op::BoolNaryOp(o) => {
                     let args =
                         c.cs.iter()
-                            .map(|c| self.get_bool(c)) //.clone())
+                            .map(|c| self.get_bool(c).clone())
                             .collect::<Vec<_>>();
                     match o {
                         BoolNaryOp::Or => self.nary_or(args.into_iter()),
@@ -494,9 +493,9 @@ impl ToR1cs {
                         self.set_bv_bits(bv, bit_lcs);
                     }
                     Op::Ite => {
-                        let c = self.get_bool(&bv.cs[0]); //.clone();
-                        let t = self.get_bv_uint(&bv.cs[1]); //.clone();
-                        let f = self.get_bv_uint(&bv.cs[2]); //.clone();
+                        let c = self.get_bool(&bv.cs[0]).clone();
+                        let t = self.get_bv_uint(&bv.cs[1]).clone();
+                        let f = self.get_bv_uint(&bv.cs[2]).clone();
                         let ite = self.ite(c, t, &f);
                         self.set_bv_uint(bv, ite, n);
                     }
@@ -537,7 +536,7 @@ impl ToR1cs {
                         self.set_bv_bits(bv.clone(), bits);
                     }
                     Op::BoolToBv => {
-                        let b = self.get_bool(&bv.cs[0]); //.clone();
+                        let b = self.get_bool(&bv.cs[0]).clone();
                         self.set_bv_bits(bv, vec![b]);
                     }
                     Op::BvNaryOp(o) => match o {
@@ -714,14 +713,16 @@ impl ToR1cs {
         }
     }
 
-    fn get_bool(&self, t: &Term) -> Lc {
+    fn get_bool(&self, t: &Term) -> &Lc {
         match self
             .cache
             .get(t)
             .unwrap_or_else(|| panic!("Missing wire for {:?}", t))
         {
-            EmbeddedTerm::Bool(b) => b.clone(),
-            //EmbeddedTerm::Bv(b) => if b.borrow().uint.is_zero() { b.borrow().uint } else { b.borrow().uint }, //panic!("bitvector {:?}", b.borrow().uint.is_zero()), //self.bv_cmp(b.borrow().bits.len(), true, true, b, zero), /// is b > 0?
+            EmbeddedTerm::Bool(b) => &b,
+            EmbeddedTerm::Bv(b) => panic!("bv instead of bool"),
+
+//if b.borrow().uint.is_zero() { b.borrow().uint } else { b.borrow().uint }, //panic!("bitvector {:?}", b.borrow().uint.is_zero()), //self.bv_cmp(b.borrow().bits.len(), true, true, b, zero), /// is b > 0?
 	    _ => panic!("Non-boolean for {:?}", t),
         }
     }
@@ -803,7 +804,7 @@ impl ToR1cs {
                 Op::Var(name, Sort::Field(_)) => self.fresh_var(name, self.eval_pf(name)),
                 Op::Const(Value::Field(r)) => self.r1cs.zero() + r.i(),
                 Op::Ite => {
-                    let cond = self.get_bool(&c.cs[0]); //.clone();
+                    let cond = self.get_bool(&c.cs[0]).clone();
                     let t = self.get_pf(&c.cs[1]).clone();
                     let f = self.get_pf(&c.cs[2]).clone();
                     self.ite(cond, t, &f)
@@ -840,7 +841,7 @@ impl ToR1cs {
     fn assert(&mut self, t: Term) {
         debug!("Assert: {}", Letified(t.clone()));
         self.embed(t.clone());
-        let lc = self.get_bool(&t); //.clone();
+        let lc = self.get_bool(&t).clone();
         self.assert_zero(lc - 1);
     }
 }
@@ -863,7 +864,8 @@ pub fn to_r1cs(cs: Computation, modulus: Integer) -> R1cs<String> {
     );
     println!("Printing assertions");
     for c in assertions {
-        converter.assert(c);
+        println!("{}",c);
+	converter.assert(c);
     }
     converter.r1cs
 }

@@ -841,7 +841,7 @@ impl ToR1cs {
     fn assert(&mut self, t: Term) {
         debug!("Assert: {}", Letified(t.clone()));
         self.embed(t.clone());
-        let lc = self.get_bool(&t).clone();
+        let lc = self.get_bool(&t).clone(); //TODO here
         self.assert_zero(lc - 1);
     }
 }

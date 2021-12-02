@@ -1,5 +1,0 @@
-
-cargo build --release --example circ_c
-
-RUST_BACKTRACE=1 ./target/release/examples/circ_c -i jess/inputs jess/add.c
-

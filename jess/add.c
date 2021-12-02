@@ -3,4 +3,5 @@ int add (__attribute__((public(0))) int a) {
   int z = a + y;
   int w = 3 + 4;
   z = z + a;
+
 }

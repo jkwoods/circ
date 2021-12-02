@@ -2,7 +2,7 @@ from utils import run_tests
 from test_suite import *
 
 if __name__ == "__main__":
-    # tests = arithmetic_tests + \
+    tests = arithmetic_tests #+ \
     #     mod_tests + \
     #     arithmetic_boolean_tests + \
     #     nary_arithmetic_tests + \

@@ -1,6 +1,10 @@
 #![allow(unused_imports)]
 use bellman::gadgets::test::TestConstraintSystem;
 use bellman::Circuit;
+use bellman::groth16::{
+    create_random_proof, generate_parameters, generate_random_parameters, prepare_verifying_key,
+    verify_proof, Parameters,
+};
 use bls12_381::Scalar;
 use circ::front::c::{Inputs, Mode, C};
 use circ::front::FrontEnd;
@@ -13,6 +17,7 @@ use circ::target::r1cs::trans::to_r1cs;
 use env_logger;
 use good_lp::default_solver;
 use std::path::PathBuf;
+use structopt::clap::arg_enum;
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
@@ -33,6 +38,19 @@ struct Options {
     /// Whether to maximize the output
     #[structopt(short, long)]
     maximize: bool,
+
+    /// What do do with the R1CS. (jw)
+    #[structopt(long, default_value = "count")]
+    proof_action: ProofOption,
+
+}
+
+arg_enum! {
+    #[derive(PartialEq, Debug)]
+    enum ProofOption {
+        Count,
+        Prove,
+    }
 }
 
 fn main() {
@@ -65,6 +83,12 @@ fn main() {
             // vec![],
             vec![Opt::Sha, Opt::ConstantFold, Opt::Mem, Opt::ConstantFold],
         ),
+	Mode::Proof  => opt(
+            cs,
+            // vec![],
+            vec![Opt::Sha, Opt::ConstantFold, Opt::Mem, Opt::ConstantFold],
+        ),
+
         _ => unimplemented!(),
     };
     println!("Done with IR optimization");
@@ -75,6 +99,26 @@ fn main() {
             let lang = &String::from("c");
             to_aby(cs, &path_buf, &lang);
             write_aby_exec(&path_buf, &lang);
+        }
+	Mode::Proof  => {
+            println!("Converting to r1cs");
+            let r1cs = to_r1cs(cs, circ::front::zokrates::ZOKRATES_MODULUS.clone());
+            println!("Pre-opt R1cs size: {}", r1cs.constraints().len());
+            let r1cs = reduce_linearities(r1cs);
+            match options.proof_action {
+                ProofOption::Count => {
+                    println!("Final R1cs size: {}", r1cs.constraints().len());
+                }
+                ProofOption::Prove => {
+                    println!("Proving");
+                    let rng = &mut rand::thread_rng();
+                    let p = generate_random_parameters::<bls12_381::Bls12, _, _>(&r1cs, rng).unwrap();
+                    let pf = create_random_proof(&r1cs, &p, rng).unwrap();
+                    println!("Verifying");
+                    let pvk = prepare_verifying_key(&p.vk);
+                    verify_proof(&pvk, &pf, &[]).unwrap();
+                }
+            }
         }
         _ => unimplemented!(),
     }

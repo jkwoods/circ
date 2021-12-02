@@ -24,18 +24,18 @@ function mpc_test {
 }
 
 # # build mpc arithmetic tests
-# mpc_test 2 ./examples/C/mpc/unit_tests/arithmetic_tests/2pc_add.c
+ mpc_test 2 ./examples/C/mpc/unit_tests/arithmetic_tests/2pc_add.c
 # # mpc_test 2 ./examples/C/mpc/unit_tests/arithmetic_tests/2pc_add_unsigned.c
-# mpc_test 2 ./examples/C/mpc/unit_tests/arithmetic_tests/2pc_sub.c
-# mpc_test 2 ./examples/C/mpc/unit_tests/arithmetic_tests/2pc_mult.c
-# mpc_test 2 ./examples/C/mpc/unit_tests/arithmetic_tests/2pc_mult_add_pub.c
-# mpc_test 2 ./examples/C/mpc/unit_tests/arithmetic_tests/2pc_mod.c
+ mpc_test 2 ./examples/C/mpc/unit_tests/arithmetic_tests/2pc_sub.c
+ mpc_test 2 ./examples/C/mpc/unit_tests/arithmetic_tests/2pc_mult.c
+ mpc_test 2 ./examples/C/mpc/unit_tests/arithmetic_tests/2pc_mult_add_pub.c
+ mpc_test 2 ./examples/C/mpc/unit_tests/arithmetic_tests/2pc_mod.c
 
-# mpc_test 2 ./examples/C/mpc/unit_tests/arithmetic_tests/2pc_int_equals.c
-# mpc_test 2 ./examples/C/mpc/unit_tests/arithmetic_tests/2pc_int_greater_than.c
-# mpc_test 2 ./examples/C/mpc/unit_tests/arithmetic_tests/2pc_int_greater_equals.c
-# mpc_test 2 ./examples/C/mpc/unit_tests/arithmetic_tests/2pc_int_less_than.c
-# mpc_test 2 ./examples/C/mpc/unit_tests/arithmetic_tests/2pc_int_less_equals.c
+ mpc_test 2 ./examples/C/mpc/unit_tests/arithmetic_tests/2pc_int_equals.c
+ mpc_test 2 ./examples/C/mpc/unit_tests/arithmetic_tests/2pc_int_greater_than.c
+ mpc_test 2 ./examples/C/mpc/unit_tests/arithmetic_tests/2pc_int_greater_equals.c
+ mpc_test 2 ./examples/C/mpc/unit_tests/arithmetic_tests/2pc_int_less_than.c
+ mpc_test 2 ./examples/C/mpc/unit_tests/arithmetic_tests/2pc_int_less_equals.c
 
 # # build mpc nary arithmetic tests
 # mpc_test 2 ./examples/C/mpc/unit_tests/nary_arithmetic_tests/2pc_nary_arithmetic_add.c

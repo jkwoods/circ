@@ -841,8 +841,18 @@ impl ToR1cs {
     fn assert(&mut self, t: Term) {
         debug!("Assert: {}", Letified(t.clone()));
         self.embed(t.clone());
-        let lc = self.get_bool(&t).clone(); //TODO here
-        self.assert_zero(lc - 1);
+	//let lc = self.get_bool(&t).clone();
+        let lc = match self
+            .cache
+            .get(&t)
+            .unwrap_or_else(|| panic!("Missing wire for {:?}", &t))
+        {
+	    EmbeddedTerm::Bool(_) => self.get_bool(&t).clone(),
+	    EmbeddedTerm::Bv(_) => self.get_bv_uint(&t), // TODO: confirm 1 or 0?
+	    _ => panic!("Non-boolean for {:?}", &t),
+	};
+        println!("{} as boolean", &t);
+	self.assert_zero(lc - 1);
     }
 }
 

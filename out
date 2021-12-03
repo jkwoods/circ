@@ -1,0 +1,6 @@
+Options { input_file_path: "jess/add.c", inputs: Some("jess/inputs"), parties: None, maximize: false, proof_action: Count }
+Done with IR optimization
+Converting to r1cs
+Printing assertions
+(bvadd add_f0_lex0_a_v0 #b00000000000000000000000000000011)
+(bvadd add_f0_lex0_a_v0 #b00000000000000000000000000000011) as boolean

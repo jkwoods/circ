@@ -1,0 +1,234 @@
+Options { path: "./examples/ZoKrates/mpc/unit_tests/arithmetic_tests/2pc_add.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", action: Count } }
+[circ::front::zokrates::parser] Parsing: ./examples/ZoKrates/mpc/unit_tests/arithmetic_tests/2pc_add.zok
+[circ::front::zokrates] fn main in ./examples/ZoKrates/mpc/unit_tests/arithmetic_tests/2pc_add.zok
+[circ::front::zokrates] Entry: main
+[circ::front::zokrates] Entry param: a: u32
+[circ::ir::term] Var: main_f0_lex0_a_v0 (visibility: None)
+[circ::front::zokrates] Entry param: b: u32
+[circ::ir::term] Var: main_f0_lex0_b_v0 (visibility: None)
+[circ::front::zokrates] Stmt: return a + b
+[circ::front::zokrates] Expr: a + b
+[circ::front::zokrates] Expr: a
+[circ::front::zokrates] Expr: b
+[circ::ir::term] Var: global_return_v0 (visibility: Some(0))
+[circ::ir::term] Var: return (visibility: None)
+[circ::ir::term] Assert: (= return (ite true (bvadd main_f0_lex0_a_v0 main_f0_lex0_b_v0) #b00000000000000000000000000000000))
+[circ::ir::opt] Applying: Flatten
+[circ::ir::opt] After Flatten: 1 outputs
+[circ::ir::opt] After Flatten: 8 terms
+[circ::ir::opt] Applying: Sha
+[circ::ir::opt] After Sha: 1 outputs
+[circ::ir::opt] After Sha: 8 terms
+[circ::ir::opt] Applying: ConstantFold
+[circ::ir::opt] After ConstantFold: 1 outputs
+[circ::ir::opt] After ConstantFold: 5 terms
+[circ::ir::opt] Applying: Flatten
+[circ::ir::opt] After Flatten: 1 outputs
+[circ::ir::opt] After Flatten: 5 terms
+[circ::ir::opt] Applying: Inline
+[circ::ir::opt] After Inline: 1 outputs
+[circ::ir::opt] After Inline: 5 terms
+[circ::ir::opt] Applying: Mem
+[circ::ir::opt::mem::visit] rebuild: main_f0_lex0_b_v0
+[circ::ir::opt::mem::visit] rebuild: main_f0_lex0_a_v0
+[circ::ir::opt::mem::visit] rebuild: (bvadd main_f0_lex0_a_v0 main_f0_lex0_b_v0)
+[circ::ir::opt::mem::visit] rebuild: return
+[circ::ir::opt::mem::visit] rebuild: (= return (bvadd main_f0_lex0_a_v0 main_f0_lex0_b_v0))
+[circ::ir::opt::mem::visit] rebuild: main_f0_lex0_b_v0
+[circ::ir::opt::mem::visit] rebuild: main_f0_lex0_a_v0
+[circ::ir::opt::mem::visit] rebuild: (bvadd main_f0_lex0_a_v0 main_f0_lex0_b_v0)
+[circ::ir::opt::mem::visit] rebuild: return
+[circ::ir::opt::mem::visit] rebuild: (= return (bvadd main_f0_lex0_a_v0 main_f0_lex0_b_v0))
+[circ::ir::opt::mem::visit] rebuild: main_f0_lex0_b_v0
+[circ::ir::opt::mem::visit] rebuild: main_f0_lex0_a_v0
+[circ::ir::opt::mem::visit] rebuild: (bvadd main_f0_lex0_a_v0 main_f0_lex0_b_v0)
+[circ::ir::opt::mem::visit] rebuild: return
+[circ::ir::opt::mem::visit] rebuild: (= return (bvadd main_f0_lex0_a_v0 main_f0_lex0_b_v0))
+[circ::ir::opt::mem::visit] rebuild: main_f0_lex0_b_v0
+[circ::ir::opt::mem::visit] rebuild: main_f0_lex0_a_v0
+[circ::ir::opt::mem::visit] rebuild: (bvadd main_f0_lex0_a_v0 main_f0_lex0_b_v0)
+[circ::ir::opt::mem::visit] rebuild: return
+[circ::ir::opt::mem::visit] rebuild: (= return (bvadd main_f0_lex0_a_v0 main_f0_lex0_b_v0))
+[circ::ir::opt] After Mem: 1 outputs
+[circ::ir::opt] After Mem: 5 terms
+[circ::ir::opt] Applying: Flatten
+[circ::ir::opt] After Flatten: 1 outputs
+[circ::ir::opt] After Flatten: 5 terms
+[circ::ir::opt] Applying: ConstantFold
+[circ::ir::opt] After ConstantFold: 1 outputs
+[circ::ir::opt] After ConstantFold: 5 terms
+[circ::ir::opt] Applying: Inline
+[circ::ir::opt] After Inline: 1 outputs
+[circ::ir::opt] After Inline: 5 terms
+[circ::ir::term] 7 of 14 terms collected
+[circ::ir::term] 2 of 7 types collected
+Done with IR optimization
+Converting to r1cs
+[circ::target::r1cs::trans] Term count: 5
+Printing assertions
+[circ::target::r1cs::trans] Assert: (let (
+    ) (= return (bvadd main_f0_lex0_b_v0 main_f0_lex0_a_v0)))
+    
+[circ::target::r1cs::trans] Embed: (let (
+    ) (= return (bvadd main_f0_lex0_b_v0 main_f0_lex0_a_v0)))
+    
+[circ::target::r1cs::trans] Embed op: main_f0_lex0_a_v0
+[circ::target::r1cs::trans] Embed op: main_f0_lex0_b_v0
+[circ::target::r1cs::trans] Embed op: bvadd
+[circ::target::r1cs::trans] Bitify(33): +0 + 1main_f0_lex0_a_v0_v0 + 1main_f0_lex0_b_v0_v1
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b0_v2
+      * -1 + 1arith_b0_v2
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b1_v3
+      * -1 + 1arith_b1_v3
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b2_v4
+      * -1 + 1arith_b2_v4
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b3_v5
+      * -1 + 1arith_b3_v5
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b4_v6
+      * -1 + 1arith_b4_v6
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b5_v7
+      * -1 + 1arith_b5_v7
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b6_v8
+      * -1 + 1arith_b6_v8
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b7_v9
+      * -1 + 1arith_b7_v9
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b8_v10
+      * -1 + 1arith_b8_v10
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b9_v11
+      * -1 + 1arith_b9_v11
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b10_v12
+      * -1 + 1arith_b10_v12
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b11_v13
+      * -1 + 1arith_b11_v13
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b12_v14
+      * -1 + 1arith_b12_v14
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b13_v15
+      * -1 + 1arith_b13_v15
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b14_v16
+      * -1 + 1arith_b14_v16
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b15_v17
+      * -1 + 1arith_b15_v17
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b16_v18
+      * -1 + 1arith_b16_v18
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b17_v19
+      * -1 + 1arith_b17_v19
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b18_v20
+      * -1 + 1arith_b18_v20
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b19_v21
+      * -1 + 1arith_b19_v21
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b20_v22
+      * -1 + 1arith_b20_v22
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b21_v23
+      * -1 + 1arith_b21_v23
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b22_v24
+      * -1 + 1arith_b22_v24
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b23_v25
+      * -1 + 1arith_b23_v25
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b24_v26
+      * -1 + 1arith_b24_v26
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b25_v27
+      * -1 + 1arith_b25_v27
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b26_v28
+      * -1 + 1arith_b26_v28
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b27_v29
+      * -1 + 1arith_b27_v29
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b28_v30
+      * -1 + 1arith_b28_v30
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b29_v31
+      * -1 + 1arith_b29_v31
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b30_v32
+      * -1 + 1arith_b30_v32
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b31_v33
+      * -1 + 1arith_b31_v33
+      = +0
+[circ::target::r1cs] Constraint:
+        +0 + 1arith_b32_v34
+      * -1 + 1arith_b32_v34
+      = +0
+[circ::target::r1cs] Constraint:
+        +0
+      * +0
+      = +0 - 1main_f0_lex0_a_v0_v0 + 4294967296arith_b32_v34 + 536870912arith_b29_v31 + 67108864arith_b26_v28 + 8388608arith_b23_v25 + 1048576arith_b20_v22 + 131072arith_b17_v19 + 16384arith_b14_v16 + 2048arith_b11_v13 + 256arith_b8_v10 + 32arith_b5_v7 + 4arith_b2_v4 - 1main_f0_lex0_b_v0_v1 + 1073741824arith_b30_v32 + 134217728arith_b27_v29 + 16777216arith_b24_v26 + 2097152arith_b21_v23 + 262144arith_b18_v20 + 32768arith_b15_v17 + 4096arith_b12_v14 + 512arith_b9_v11 + 64arith_b6_v8 + 8arith_b3_v5 + 1arith_b0_v2 + 2147483648arith_b31_v33 + 268435456arith_b28_v30 + 33554432arith_b25_v27 + 4194304arith_b22_v24 + 524288arith_b19_v21 + 65536arith_b16_v18 + 8192arith_b13_v15 + 1024arith_b10_v12 + 128arith_b7_v9 + 16arith_b4_v6 + 2arith_b1_v3
+[circ::target::r1cs::trans] Embed op: return
+[circ::target::r1cs::trans] Embed op: =
+[circ::target::r1cs] Constraint:
+        +0 + 1is_zero_inv_v36
+      * +0 - 536870912arith_b29_v31 - 67108864arith_b26_v28 - 8388608arith_b23_v25 - 1048576arith_b20_v22 - 131072arith_b17_v19 - 16384arith_b14_v16 - 2048arith_b11_v13 - 256arith_b8_v10 - 32arith_b5_v7 - 4arith_b2_v4 + 1return_v35 - 1073741824arith_b30_v32 - 134217728arith_b27_v29 - 16777216arith_b24_v26 - 2097152arith_b21_v23 - 262144arith_b18_v20 - 32768arith_b15_v17 - 4096arith_b12_v14 - 512arith_b9_v11 - 64arith_b6_v8 - 8arith_b3_v5 - 1arith_b0_v2 - 2147483648arith_b31_v33 - 268435456arith_b28_v30 - 33554432arith_b25_v27 - 4194304arith_b22_v24 - 524288arith_b19_v21 - 65536arith_b16_v18 - 8192arith_b13_v15 - 1024arith_b10_v12 - 128arith_b7_v9 - 16arith_b4_v6 - 2arith_b1_v3
+      = +1 - 1is_zero_v37
+[circ::target::r1cs] Constraint:
+        +0 + 1is_zero_v37
+      * +0 - 536870912arith_b29_v31 - 67108864arith_b26_v28 - 8388608arith_b23_v25 - 1048576arith_b20_v22 - 131072arith_b17_v19 - 16384arith_b14_v16 - 2048arith_b11_v13 - 256arith_b8_v10 - 32arith_b5_v7 - 4arith_b2_v4 + 1return_v35 - 1073741824arith_b30_v32 - 134217728arith_b27_v29 - 16777216arith_b24_v26 - 2097152arith_b21_v23 - 262144arith_b18_v20 - 32768arith_b15_v17 - 4096arith_b12_v14 - 512arith_b9_v11 - 64arith_b6_v8 - 8arith_b3_v5 - 1arith_b0_v2 - 2147483648arith_b31_v33 - 268435456arith_b28_v30 - 33554432arith_b25_v27 - 4194304arith_b22_v24 - 524288arith_b19_v21 - 65536arith_b16_v18 - 8192arith_b13_v15 - 1024arith_b10_v12 - 128arith_b7_v9 - 16arith_b4_v6 - 2arith_b1_v3
+      = +0
+(= return (bvadd main_f0_lex0_b_v0 main_f0_lex0_a_v0)) as boolean
+[circ::target::r1cs] Constraint:
+        +0
+      * +0
+      = -1 + 1is_zero_v37
+Pre-opt R1cs size: 37
+[circ::target::r1cs::opt] Elim: main_f0_lex0_a_v0_v0 -> +0 + 4294967296arith_b32_v34 + 536870912arith_b29_v31 + 67108864arith_b26_v28 + 8388608arith_b23_v25 + 1048576arith_b20_v22 + 131072arith_b17_v19 + 16384arith_b14_v16 + 2048arith_b11_v13 + 256arith_b8_v10 + 32arith_b5_v7 + 4arith_b2_v4 - 1main_f0_lex0_b_v0_v1 + 1073741824arith_b30_v32 + 134217728arith_b27_v29 + 16777216arith_b24_v26 + 2097152arith_b21_v23 + 262144arith_b18_v20 + 32768arith_b15_v17 + 4096arith_b12_v14 + 512arith_b9_v11 + 64arith_b6_v8 + 8arith_b3_v5 + 1arith_b0_v2 + 2147483648arith_b31_v33 + 268435456arith_b28_v30 + 33554432arith_b25_v27 + 4194304arith_b22_v24 + 524288arith_b19_v21 + 65536arith_b16_v18 + 8192arith_b13_v15 + 1024arith_b10_v12 + 128arith_b7_v9 + 16arith_b4_v6 + 2arith_b1_v3
+[circ::target::r1cs::opt] Elim: is_zero_v37 -> +1
+[circ::target::r1cs::opt] Elim: arith_b29_v31 -> +0 + 6554484396890773809930967563523245729711319062565954727825457337492322648064arith_b26_v28 + 819310549611346726241370945440405716213914882820744340978182167186540331008arith_b23_v25 + 102413818701418340780171368180050714526739360352593042622272770898317541376arith_b20_v22 + 12801727337677292597521421022506339315842420044074130327784096362289692672arith_b17_v19 + 1600215917209661574690177627813292414480302505509266290973012045286211584arith_b14_v16 + 200026989651207696836272203476661551810037813188658286371626505660776448arith_b11_v13 + 25003373706400962104534025434582693976254726648582285796453313207597056arith_b8_v10 + 3125421713300120263066753179322836747031840831072785724556664150949632arith_b5_v7 + 390677714162515032883344147415354593378980103884098215569583018868704arith_b2_v4 - 97669428540628758220836036853838648344745025971024553892395754717176return_v35 - 2arith_b30_v32 + 13108968793781547619861935127046491459422638125131909455650914674984645296128arith_b27_v29 + 1638621099222693452482741890880811432427829765641488681956364334373080662016arith_b24_v26 + 204827637402836681560342736360101429053478720705186085244545541796635082752arith_b21_v23 + 25603454675354585195042842045012678631684840088148260655568192724579385344arith_b18_v20 + 3200431834419323149380355255626584828960605011018532581946024090572423168arith_b15_v17 + 400053979302415393672544406953323103620075626377316572743253011321552896arith_b12_v14 + 50006747412801924209068050869165387952509453297164571592906626415194112arith_b9_v11 + 6250843426600240526133506358645673494063681662145571449113328301899264arith_b6_v8 + 781355428325030065766688294830709186757960207768196431139166037737408arith_b3_v5 + 97669428540628758220836036853838648344745025971024553892395754717176arith_b0_v2 - 4arith_b31_v33 - 26217937587563095239723870254092982918845276250263818911301829349969290592257arith_b28_v30 + 3277242198445386904965483781761622864855659531282977363912728668746161324032arith_b25_v27 + 409655274805673363120685472720202858106957441410372170489091083593270165504arith_b22_v24 + 51206909350709170390085684090025357263369680176296521311136385449158770688arith_b19_v21 + 6400863668838646298760710511253169657921210022037065163892048181144846336arith_b16_v18 + 800107958604830787345088813906646207240151252754633145486506022643105792arith_b13_v15 + 100013494825603848418136101738330775905018906594329143185813252830388224arith_b10_v12 + 12501686853200481052267012717291346988127363324291142898226656603798528arith_b7_v9 + 1562710856650060131533376589661418373515920415536392862278332075474816arith_b4_v6 + 195338857081257516441672073707677296689490051942049107784791509434352arith_b1_v3
+Final R1cs size: 33

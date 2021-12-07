@@ -637,7 +637,8 @@ impl CGen {
                 }
             }
             Statement::Return(ret) => {
-                match ret {
+        	debug!("Ret stmt: {:#?}", ret.clone().unwrap());
+	        match ret {
                     Some(expr) => {
                         let ret = self.gen_expr(expr.node);
                         let ret_res = self.circ.return_(Some(ret));

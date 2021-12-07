@@ -848,11 +848,10 @@ impl ToR1cs {
             .unwrap_or_else(|| panic!("Missing wire for {:?}", &t))
         {
 	    EmbeddedTerm::Bool(_) => self.get_bool(&t).clone(),
-	    EmbeddedTerm::Bv(_) => self.get_bv_uint(&t), // TODO: confirm 1 or 0?
+	//    EmbeddedTerm::Bv(_) => self.get_bv_uint(&t), // TODO: confirm 1 or 0?
 	    _ => panic!("Non-boolean for {:?}", &t),
 	};
 
-        println!("{} as boolean", &t);
 	self.assert_zero(lc - 1);
     }
 }

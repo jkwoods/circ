@@ -6,6 +6,7 @@ use bellman::groth16::{
 };
 use bellman::Circuit;
 use bls12_381::{Scalar, Bls12};
+use libspartan::*
 use circ::front::datalog::{self, Datalog};
 use circ::front::zokrates::{self, Zokrates};
 use circ::front::c::{self, C};
@@ -16,7 +17,7 @@ use circ::target::aby::trans::to_aby;
 use circ::target::ilp::trans::to_ilp;
 use circ::target::r1cs::opt::reduce_linearities;
 use circ::target::r1cs::trans::to_r1cs;
-use circ::target::r1cs::zkinterface::to_zkif;
+use circ::target::r1cs::spartan::r1cs_to_spartan;
 use circ::target::smt::find_model;
 use env_logger;
 use good_lp::default_solver;
@@ -83,13 +84,6 @@ enum Backend {
         #[structopt(long, default_value = "count")]
         action: ProofAction,
 
-	#[structopt(long, default_value = "w.zkif", parse(from_os_str))]
-        zkif_witness: PathBuf,
-	#[structopt(long, default_value = "i.zkif", parse(from_os_str))]
-        zkif_inputs: PathBuf,
-	#[structopt(long, default_value = "C.zkif", parse(from_os_str))]
-        zkif_circuit: PathBuf,
-
     },
     Smt {},
     Ilp {},
@@ -121,7 +115,7 @@ arg_enum! {
         Prove,
         Setup,
         Verify,
-	ZkIf,
+	Spartan,
     }
 }
 
@@ -220,7 +214,7 @@ fn main() {
                 Opt::ConstantFold,
                 Opt::Inline,
             ],
-        ),
+        ),ddfsjh
     };
     println!("Done with IR optimization");
 
@@ -235,29 +229,29 @@ fn main() {
                 ProofAction::Count => {
                     println!("Final R1cs size: {}", r1cs.constraints().len());
                 }
-		ProofAction::ZkIf => {
-		    println!("Final R1cs size: {}", r1cs.constraints().len()); 
-		    println!("Outputing ZkInterface files for Spartan");
+		ProofAction::Spartan => {
+		    println!("Converting R1CS to Spartan");
+    
+		    let (inst, vars, inps, num_cons, num_vars, num_inputs) = r1cs_to_spartan(&r1cs);
 
-		    
-/*
-		    let zkif =
+		    println!("Proving with Spartan");
+		    // produce public parameters
+		    let gens = NIZKGens::new(num_cons, num_vars, num_inputs);
+		    // produce proof
+		    let mut prover_transcript = Transcript::new(b"nizk_example");
+		    let pf = NIZK::prove(&inst, vars, &inps, &gens, &mut prover_transcript);		    
+		    // write proof file
+		    let mut pf_file = File::create(proof).unwrap();
+                    pf.write(&mut pf_file).unwrap();
 
-		    let mut circuit_file = File::create(zkif_circuit).unwrap();
-                    zkif.write(&mut circuit_file).unwrap();
-		    
+                    println!("Verifying with Spartan");
+                    // verify proof
+		    let mut verifier_transcript = Transcript::new(b"nizk_example");
+		    assert!(pf
+			.verify(&inst, &inps, &mut verifier_transcript, &gens)
+			.is_ok());
+		    println!("proof verification successful!");
 
-		    let inp = 
-
-		    let mut inputs_file = File::create(zkif_inputs).unwrap();
-                    inp.write(&mut inputs_file).unwrap();
-		    
-
-		    let wit =
-
-		    let mut witness_file = File::create(zkif_witness).unwrap();
-                    wit.write(&mut witness_file).unwrap();
-*?
 		}
                 ProofAction::Prove => {
                     println!("Proving");

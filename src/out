@@ -1,0 +1,975 @@
+   Compiling bitvec v0.18.4
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/field.rs:307:25
+    |
+307 |         check("load", len, M::BITS);
+    |                               ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+307 |         check("load", len, BitMemory::BITS);
+    |                            ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+307 |         check("load", len, IsNumber::BITS);
+    |                            ~~~~~~~~~~
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/field.rs:341:12
+    |
+341 |                     if M::BITS > T::Mem::BITS {
+    |                           ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+341 |                     if BitMemory::BITS > T::Mem::BITS {
+    |                        ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+341 |                     if IsNumber::BITS > T::Mem::BITS {
+    |                        ~~~~~~~~~~
+
+error[E0308]: mismatched types
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/field.rs:341:19
+    |
+304 |     fn load_le<M>(&self) -> M
+    |                - this type parameter
+...
+341 |                     if M::BITS > T::Mem::BITS {
+    |                                  ^^^^^^^^^^^^ expected type parameter `M`, found `u8`
+    |
+    = note: expected type parameter `M`
+                         found type `u8`
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/field.rs:362:25
+    |
+362 |         check("load", len, M::BITS);
+    |                               ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+362 |         check("load", len, BitMemory::BITS);
+    |                            ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+362 |         check("load", len, IsNumber::BITS);
+    |                            ~~~~~~~~~~
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/field.rs:377:12
+    |
+377 |                     if M::BITS > T::Mem::BITS {
+    |                           ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+377 |                     if BitMemory::BITS > T::Mem::BITS {
+    |                        ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+377 |                     if IsNumber::BITS > T::Mem::BITS {
+    |                        ~~~~~~~~~~
+
+error[E0308]: mismatched types
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/field.rs:377:19
+    |
+359 |     fn load_be<M>(&self) -> M
+    |                - this type parameter
+...
+377 |                     if M::BITS > T::Mem::BITS {
+    |                                  ^^^^^^^^^^^^ expected type parameter `M`, found `u8`
+    |
+    = note: expected type parameter `M`
+                         found type `u8`
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/field.rs:397:26
+    |
+397 |         check("store", len, M::BITS);
+    |                                ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+397 |         check("store", len, BitMemory::BITS);
+    |                             ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+397 |         check("store", len, IsNumber::BITS);
+    |                             ~~~~~~~~~~
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/field.rs:412:12
+    |
+412 |                     if M::BITS > T::Mem::BITS {
+    |                           ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+412 |                     if BitMemory::BITS > T::Mem::BITS {
+    |                        ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+412 |                     if IsNumber::BITS > T::Mem::BITS {
+    |                        ~~~~~~~~~~
+
+error[E0308]: mismatched types
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/field.rs:412:19
+    |
+394 |     fn store_le<M>(&mut self, mut value: M)
+    |                 - this type parameter
+...
+412 |                     if M::BITS > T::Mem::BITS {
+    |                                  ^^^^^^^^^^^^ expected type parameter `M`, found `u8`
+    |
+    = note: expected type parameter `M`
+                         found type `u8`
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/field.rs:428:26
+    |
+428 |         check("store", len, M::BITS);
+    |                                ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+428 |         check("store", len, BitMemory::BITS);
+    |                             ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+428 |         check("store", len, IsNumber::BITS);
+    |                             ~~~~~~~~~~
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/field.rs:442:12
+    |
+442 |                     if M::BITS > T::Mem::BITS {
+    |                           ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+442 |                     if BitMemory::BITS > T::Mem::BITS {
+    |                        ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+442 |                     if IsNumber::BITS > T::Mem::BITS {
+    |                        ~~~~~~~~~~
+
+error[E0308]: mismatched types
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/field.rs:442:19
+    |
+425 |     fn store_be<M>(&mut self, mut value: M)
+    |                 - this type parameter
+...
+442 |                     if M::BITS > T::Mem::BITS {
+    |                                  ^^^^^^^^^^^^ expected type parameter `M`, found `u8`
+    |
+    = note: expected type parameter `M`
+                         found type `u8`
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/field.rs:467:25
+    |
+467 |         check("load", len, M::BITS);
+    |                               ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+467 |         check("load", len, BitMemory::BITS);
+    |                            ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+467 |         check("load", len, IsNumber::BITS);
+    |                            ~~~~~~~~~~
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/field.rs:487:12
+    |
+487 |                     if M::BITS > T::Mem::BITS {
+    |                           ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+487 |                     if BitMemory::BITS > T::Mem::BITS {
+    |                        ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+487 |                     if IsNumber::BITS > T::Mem::BITS {
+    |                        ~~~~~~~~~~
+
+error[E0308]: mismatched types
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/field.rs:487:19
+    |
+464 |     fn load_le<M>(&self) -> M
+    |                - this type parameter
+...
+487 |                     if M::BITS > T::Mem::BITS {
+    |                                  ^^^^^^^^^^^^ expected type parameter `M`, found `u8`
+    |
+    = note: expected type parameter `M`
+                         found type `u8`
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/field.rs:507:25
+    |
+507 |         check("load", len, M::BITS);
+    |                               ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+507 |         check("load", len, BitMemory::BITS);
+    |                            ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+507 |         check("load", len, IsNumber::BITS);
+    |                            ~~~~~~~~~~
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/field.rs:523:12
+    |
+523 |                     if M::BITS > T::Mem::BITS {
+    |                           ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+523 |                     if BitMemory::BITS > T::Mem::BITS {
+    |                        ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+523 |                     if IsNumber::BITS > T::Mem::BITS {
+    |                        ~~~~~~~~~~
+
+error[E0308]: mismatched types
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/field.rs:523:19
+    |
+504 |     fn load_be<M>(&self) -> M
+    |                - this type parameter
+...
+523 |                     if M::BITS > T::Mem::BITS {
+    |                                  ^^^^^^^^^^^^ expected type parameter `M`, found `u8`
+    |
+    = note: expected type parameter `M`
+                         found type `u8`
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/field.rs:548:26
+    |
+548 |         check("store", len, M::BITS);
+    |                                ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+548 |         check("store", len, BitMemory::BITS);
+    |                             ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+548 |         check("store", len, IsNumber::BITS);
+    |                             ~~~~~~~~~~
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/field.rs:565:12
+    |
+565 |                     if M::BITS > T::Mem::BITS {
+    |                           ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+565 |                     if BitMemory::BITS > T::Mem::BITS {
+    |                        ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+565 |                     if IsNumber::BITS > T::Mem::BITS {
+    |                        ~~~~~~~~~~
+
+error[E0308]: mismatched types
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/field.rs:565:19
+    |
+545 |     fn store_le<M>(&mut self, mut value: M)
+    |                 - this type parameter
+...
+565 |                     if M::BITS > T::Mem::BITS {
+    |                                  ^^^^^^^^^^^^ expected type parameter `M`, found `u8`
+    |
+    = note: expected type parameter `M`
+                         found type `u8`
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/field.rs:586:26
+    |
+586 |         check("store", len, M::BITS);
+    |                                ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+586 |         check("store", len, BitMemory::BITS);
+    |                             ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+586 |         check("store", len, IsNumber::BITS);
+    |                             ~~~~~~~~~~
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/field.rs:608:12
+    |
+608 |                     if M::BITS > T::Mem::BITS {
+    |                           ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+608 |                     if BitMemory::BITS > T::Mem::BITS {
+    |                        ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+608 |                     if IsNumber::BITS > T::Mem::BITS {
+    |                        ~~~~~~~~~~
+
+error[E0308]: mismatched types
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/field.rs:608:19
+    |
+583 |     fn store_be<M>(&mut self, mut value: M)
+    |                 - this type parameter
+...
+608 |                     if M::BITS > T::Mem::BITS {
+    |                                  ^^^^^^^^^^^^ expected type parameter `M`, found `u8`
+    |
+    = note: expected type parameter `M`
+                         found type `u8`
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/index.rs:466:45
+    |
+466 |     pub(crate) const END: Self = make!(tail M::BITS);
+    |                                                ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+466 |     pub(crate) const END: Self = make!(tail BitMemory::BITS);
+    |                                             ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+466 |     pub(crate) const END: Self = make!(tail IsNumber::BITS);
+    |                                             ~~~~~~~~~~
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/index.rs:145:16
+    |
+145 |         if idx >= M::BITS {
+    |                      ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+145 |         if idx >= BitMemory::BITS {
+    |                   ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+145 |         if idx >= IsNumber::BITS {
+    |                   ~~~~~~~~~~
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/index.rs:169:13
+    |
+169 |             idx < M::BITS,
+    |                      ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+169 |             idx < BitMemory::BITS,
+    |                   ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+169 |             idx < IsNumber::BITS,
+    |                   ~~~~~~~~~~
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/index.rs:172:7
+    |
+172 |             M::BITS
+    |                ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+172 |             BitMemory::BITS
+    |             ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+172 |             IsNumber::BITS
+    |             ~~~~~~~~~~
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/index.rs:190:42
+    |
+190 |         (make!(idx next & M::MASK), next == M::BITS)
+    |                                                ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+190 |         (make!(idx next & M::MASK), next == BitMemory::BITS)
+    |                                             ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+190 |         (make!(idx next & M::MASK), next == IsNumber::BITS)
+    |                                             ~~~~~~~~~~
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/index.rs:325:16
+    |
+325 |             if (0 .. M::BITS as isize).contains(&far) {
+    |                         ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+325 |             if (0 .. BitMemory::BITS as isize).contains(&far) {
+    |                      ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+325 |             if (0 .. IsNumber::BITS as isize).contains(&far) {
+    |                      ~~~~~~~~~~
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/index.rs:488:14
+    |
+488 |             end <= M::BITS,
+    |                       ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+488 |             end <= BitMemory::BITS,
+    |                    ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+488 |             end <= IsNumber::BITS,
+    |                    ~~~~~~~~~~
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/index.rs:491:7
+    |
+491 |             M::BITS
+    |                ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+491 |             BitMemory::BITS
+    |             ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+491 |             IsNumber::BITS
+    |             ~~~~~~~~~~
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/index.rs:546:26
+    |
+546 |         let bits_in_head = (M::BITS - head) as usize;
+    |                                ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+546 |         let bits_in_head = (BitMemory::BITS - head) as usize;
+    |                             ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+546 |         let bits_in_head = (IsNumber::BITS - head) as usize;
+    |                             ~~~~~~~~~~
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/index.rs:640:16
+    |
+640 |         if pos >= M::BITS {
+    |                      ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+640 |         if pos >= BitMemory::BITS {
+    |                   ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+640 |         if pos >= IsNumber::BITS {
+    |                   ~~~~~~~~~~
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/index.rs:667:13
+    |
+667 |             pos < M::BITS,
+    |                      ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+667 |             pos < BitMemory::BITS,
+    |                   ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+667 |             pos < IsNumber::BITS,
+    |                   ~~~~~~~~~~
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/index.rs:670:7
+    |
+670 |             M::BITS
+    |                ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+670 |             BitMemory::BITS
+    |             ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+670 |             IsNumber::BITS
+    |             ~~~~~~~~~~
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/index.rs:805:7
+    |
+805 |             M::BITS as usize
+    |                ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+805 |             BitMemory::BITS as usize
+    |             ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+805 |             IsNumber::BITS as usize
+    |             ~~~~~~~~~~
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/index.rs:850:40
+    |
+850 |         write!(fmt, "{:0>1$b}", self.sel, M::BITS as usize)
+    |                                              ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+850 |         write!(fmt, "{:0>1$b}", self.sel, BitMemory::BITS as usize)
+    |                                           ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+850 |         write!(fmt, "{:0>1$b}", self.sel, IsNumber::BITS as usize)
+    |                                           ~~~~~~~~~~
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/index.rs:977:41
+    |
+977 |         write!(fmt, "{:0>1$b}", self.mask, M::BITS as usize)
+    |                                               ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+977 |         write!(fmt, "{:0>1$b}", self.mask, BitMemory::BITS as usize)
+    |                                            ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+977 |         write!(fmt, "{:0>1$b}", self.mask, IsNumber::BITS as usize)
+    |                                            ~~~~~~~~~~
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:28:25
+    |
+28  |     const INDX: u8 = Self::BITS.trailing_zeros() as u8;
+    |                            ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+28  |     const INDX: u8 = BitMemory::BITS.trailing_zeros() as u8;
+    |                      ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+28  |     const INDX: u8 = IsNumber::BITS.trailing_zeros() as u8;
+    |                      ~~~~~~~~~~
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:30:25
+    |
+30  |     const MASK: u8 = Self::BITS - 1;
+    |                            ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+30  |     const MASK: u8 = BitMemory::BITS - 1;
+    |                      ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+30  |     const MASK: u8 = IsNumber::BITS - 1;
+    |                      ~~~~~~~~~~
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/order.rs:278:15
+    |
+278 |         if ct == M::BITS {
+    |                     ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+278 |         if ct == BitMemory::BITS {
+    |                  ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+278 |         if ct == IsNumber::BITS {
+    |                  ~~~~~~~~~~
+
+error[E0034]: multiple applicable items in scope
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/order.rs:318:15
+    |
+318 |         if ct == M::BITS {
+    |                     ^^^^ multiple `BITS` found
+    |
+note: candidate #1 is defined in the trait `BitMemory`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/bitvec-0.18.4/src/mem.rs:26:2
+    |
+26  |     const BITS: u8 = mem::size_of::<Self>() as u8 * 8;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in the trait `IsNumber`
+   --> /home/sga001/.cargo/registry/src/github.com-1ecc6299db9ec823/funty-1.2.0/src/lib.rs:144:2
+    |
+144 |     const BITS: u32;
+    |     ^^^^^^^^^^^^^^^^
+help: disambiguate the associated constant for candidate #1
+    |
+318 |         if ct == BitMemory::BITS {
+    |                  ~~~~~~~~~~~
+help: disambiguate the associated constant for candidate #2
+    |
+318 |         if ct == IsNumber::BITS {
+    |                  ~~~~~~~~~~
+
+Some errors have detailed explanations: E0034, E0308.
+For more information about an error, try `rustc --explain E0034`.
+error: could not compile `bitvec` due to 43 previous errors

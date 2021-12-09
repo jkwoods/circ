@@ -34,6 +34,7 @@ pest = "2.1"
 pest_derive = "2.1"
 pest-ast = "0.3"
 from-pest = "0.3"
+spartan = "0.4.1"
 
 [dev-dependencies]
 quickcheck = "1"

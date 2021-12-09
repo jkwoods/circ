@@ -16,6 +16,7 @@ use circ::target::aby::trans::to_aby;
 use circ::target::ilp::trans::to_ilp;
 use circ::target::r1cs::opt::reduce_linearities;
 use circ::target::r1cs::trans::to_r1cs;
+use circ::target::r1cs::zkinterface::to_zkif;
 use circ::target::smt::find_model;
 use env_logger;
 use good_lp::default_solver;
@@ -25,6 +26,7 @@ use std::path::PathBuf;
 use structopt::clap::arg_enum;
 use std::io::Read;
 use structopt::StructOpt;
+
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "circ", about = "CirC: the circuit compiler")]
@@ -80,6 +82,14 @@ enum Backend {
         instance: PathBuf,
         #[structopt(long, default_value = "count")]
         action: ProofAction,
+
+	#[structopt(long, default_value = "w.zkif", parse(from_os_str))]
+        zkif_witness: PathBuf,
+	#[structopt(long, default_value = "i.zkif", parse(from_os_str))]
+        zkif_inputs: PathBuf,
+	#[structopt(long, default_value = "C.zkif", parse(from_os_str))]
+        zkif_circuit: PathBuf,
+
     },
     Smt {},
     Ilp {},
@@ -111,6 +121,7 @@ arg_enum! {
         Prove,
         Setup,
         Verify,
+	ZkIf,
     }
 }
 
@@ -216,19 +227,44 @@ fn main() {
     match options.backend {
         Backend::R1cs { action, proof, prover_key, verifier_key, .. } => {
             println!("Converting to r1cs");
-            let r1cs = to_r1cs(cs, circ::front::zokrates::ZOKRATES_MODULUS.clone());
+            let r1cs = to_r1cs(cs, circ::front::zokrates::ZOKRATES_MODULUS.clone()); //spartan mod - 7237005577332262213973186563042994240857116359379907606001950938285454250989 (?)
             println!("Pre-opt R1cs size: {}", r1cs.constraints().len());
             let r1cs = reduce_linearities(r1cs);
+
             match action {
                 ProofAction::Count => {
                     println!("Final R1cs size: {}", r1cs.constraints().len());
                 }
+		ProofAction::ZkIf => {
+		    println!("Final R1cs size: {}", r1cs.constraints().len()); 
+		    println!("Outputing ZkInterface files for Spartan");
+
+		    
+/*
+		    let zkif =
+
+		    let mut circuit_file = File::create(zkif_circuit).unwrap();
+                    zkif.write(&mut circuit_file).unwrap();
+		    
+
+		    let inp = 
+
+		    let mut inputs_file = File::create(zkif_inputs).unwrap();
+                    inp.write(&mut inputs_file).unwrap();
+		    
+
+		    let wit =
+
+		    let mut witness_file = File::create(zkif_witness).unwrap();
+                    wit.write(&mut witness_file).unwrap();
+*?
+		}
                 ProofAction::Prove => {
                     println!("Proving");
                     let rng = &mut rand::thread_rng();
                     let mut pk_file = File::open(prover_key).unwrap();
                     let pk = Parameters::<Bls12>::read(&mut pk_file, false).unwrap();
-                    let pf = create_random_proof(&r1cs, &pk, rng).unwrap();
+            	    let pf = create_random_proof(&r1cs, &pk, rng).unwrap();
                     let mut pf_file = File::create(proof).unwrap();
                     pf.write(&mut pf_file).unwrap();
                 }

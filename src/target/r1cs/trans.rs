@@ -840,7 +840,8 @@ impl ToR1cs {
         debug!("Assert: {}", Letified(t.clone()));
         self.embed(t.clone());
         let lc = self.get_bool(&t).clone();
-        self.assert_zero(lc - 1);
+        print!("{:#?}", lc);
+	self.assert_zero(lc - 1);
     }
 }
 
@@ -860,10 +861,11 @@ pub fn to_r1cs(cs: Computation, modulus: Integer) -> R1cs<String> {
             .map(|c| PostOrderIter::new(c.clone()).count())
             .sum::<usize>()
     );
-    println!("Printing assertions");
     for c in assertions {
         converter.assert(c);
     }
+    
+    println!("R1CS: {:#?}", converter.r1cs);
     converter.r1cs
 }
 

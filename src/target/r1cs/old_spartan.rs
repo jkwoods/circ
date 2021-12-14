@@ -1,7 +1,6 @@
 //! Export circ R1cs to Spartan
 use libspartan::*;
 use crate::target::r1cs::*;
-use curve25519_dalek::scalar::Scalar;
 
 use log::debug;
 use std::collections::HashMap;
@@ -17,9 +16,6 @@ pub struct Variable {
 fn r1cs_to_spartan(r1cs: &mut R1cs<S>) //, inputs??) -> (R1CSInstance, Vec<Scalar>, Vec<Scalar>)
 {
 
-    let num_vars = witness.len();
-    let num_inputs = inputs.len();
-
 //    let inputs = get_variables(??);
     
 //    let witness = get_variables(r1cs.values)
@@ -33,27 +29,27 @@ fn r1cs_to_spartan(r1cs: &mut R1cs<S>) //, inputs??) -> (R1CSInstance, Vec<Scala
     for (lc_a, lc_b, lc_c) in r1cs.constraints {
 
         // circ Lc (const, monomials <Integer>) -> Vec<Integer> -> Vec<Variable>
-	let a = lc_to_v(lc_a, num_vars);
-        let b = lc_to_v(lc_b, num_vars);
-	let c = lc_to_v(lc_c, num_vars);
+	let a = lc_to_v(lc_a, &i);
+	let b = lc_to_v(lc_b, &i);
+	let c = lc_to_v(lc_c, &i);
+
+	// TODO - deal with constants
 
 	// constraint # x identifier (vars, 1, inp)
-        for Variable { id, value } in a {
-            A.push((i, id, value));
-	}
-	for Variable { id, value } in b { 
-  	    B.push((i, id, value));
-	}
-	for Variable { id, value } in c {
-            C.push((i, id, value));
-	}
+        A.push((i, translate(a.id), a.value));
+  	B.push((i, translate(b.id), a.value));
+        C.push((i, translate(c.id), a.value));
+
 
         i += 1;
 
     }
 
-    
+    /*
     let num_cons = i;
+    let num_vars = witness.len();
+    let num_inputs = inputs.len();
+
     let inst = R1CSInstance::new(num_cons, num_vars, num_inputs, &A, &B, &C).unwrap();
 
     // check if the instance we created is satisfiable
@@ -61,42 +57,22 @@ fn r1cs_to_spartan(r1cs: &mut R1cs<S>) //, inputs??) -> (R1CSInstance, Vec<Scala
     assert_eq!(res.unwrap(), true);
 
     (inst, vars, inputs, num_cons, num_vars, num_inputs)
-
+*/
 }
 
-fn int_to_scalar(in: &Integer) -> Scalar {
 
-
-}
-
-// figure out input or witness, put into Spartan format: z = [vars, 1, inputs]
-fn translate(k: &usize) -> usize {
-
-
-}
-
-// circ Lc (const, monomials <Integer>) -> Vec<Variable>
-fn lc_to_v(lc: &Lc, const_id: &usize) -> Vec<Variable> {
-    let mut v: Vec<Variable> = Vec::new();
-
+// circ Lc (const, monomials <Integer>) -> Vec<Integer> -> Vec<Variable>
+fn lc_to_v(lc: &Lc, i: &usize) -> Variable {
+    let mut val = [0; 32];
     for (k,m) in lc.monomials {
-	if (k >= const_id) { panic!("Error: variable number off") }
+        val[k] = m;
+    }
 
-        let scalar = int_to_scalar(m);
-        let var = Variable {
-            id: translate(k),
-            value: scalar.to_bytes(),
-        };
-	v.push(var);
-    }
-    if (lc.constant != &Integer::from(0)) {
-	let scalar = int_to_scalar(m);
-        let var = Variable {
-            id: const_id,
-            value: scalar.to_bytes(),
-        };
-        v.push(var);
-    }
+    let v = Variable {
+        id: i,
+        value: val,
+    };
+
     v
 }
 

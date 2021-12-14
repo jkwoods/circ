@@ -6,7 +6,7 @@ use bellman::groth16::{
 };
 use bellman::Circuit;
 use bls12_381::{Scalar, Bls12};
-use libspartan::*
+use libspartan::*;
 use circ::front::datalog::{self, Datalog};
 use circ::front::zokrates::{self, Zokrates};
 use circ::front::c::{self, C};
@@ -18,6 +18,7 @@ use circ::target::ilp::trans::to_ilp;
 use circ::target::r1cs::opt::reduce_linearities;
 use circ::target::r1cs::trans::to_r1cs;
 use circ::target::r1cs::spartan::r1cs_to_spartan;
+
 use circ::target::smt::find_model;
 use env_logger;
 use good_lp::default_solver;
@@ -214,7 +215,7 @@ fn main() {
                 Opt::ConstantFold,
                 Opt::Inline,
             ],
-        ),ddfsjh
+        ),
     };
     println!("Done with IR optimization");
 
@@ -231,7 +232,9 @@ fn main() {
                 }
 		ProofAction::Spartan => {
 		    println!("Converting R1CS to Spartan");
-    
+
+		    r1cs_to_spartan(&r1cs);
+/*    
 		    let (inst, vars, inps, num_cons, num_vars, num_inputs) = r1cs_to_spartan(&r1cs);
 
 		    println!("Proving with Spartan");
@@ -251,7 +254,7 @@ fn main() {
 			.verify(&inst, &inps, &mut verifier_transcript, &gens)
 			.is_ok());
 		    println!("proof verification successful!");
-
+*/
 		}
                 ProofAction::Prove => {
                     println!("Proving");

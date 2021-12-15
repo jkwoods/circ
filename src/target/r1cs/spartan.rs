@@ -14,17 +14,35 @@ pub struct Variable {
 
 
 // circ R1cs -> spartan R1CSInstance
-fn r1cs_to_spartan(r1cs: &mut R1cs<S>) //, inputs??) -> (R1CSInstance, Vec<Scalar>, Vec<Scalar>)
+fn r1cs_to_spartan(r1cs: &mut R1cs<S>, inputs: XXX, witness: XX) -> (R1CSInstance, Vec<Scalar>, Vec<Scalar>)
 {
 
-    let num_vars = witness.len();
     let num_inputs = inputs.len();
 
-//    let inputs = get_variables(??);
     
-//    let witness = get_variables(r1cs.values)
+    // witness
+    let mut wit: Vec<Variable> = Vec::new();
+    let mut witness: Vec<Scalar> = Vec::new();
 
+    for m in r1cs.values {
+	match m {
+	    Some (k, v) => { // CirC id, Integer
+		let scalar = int_to_scalar(v);
+        	let var = Variable {
+            	    id: translate(k),
+            	    value: scalar.to_bytes(),
+        	};
+	    wit.push(var);
+	    witness.push(scalar); // ordering (?) - TODO
 
+	    }
+	    None => {}
+	}
+    }
+
+    let num_vars = witness.length();
+ 
+    // circuit
     let mut A: Vec<(usize, usize, [u8; 32])> = Vec::new();
     let mut B: Vec<(usize, usize, [u8; 32])> = Vec::new();
     let mut C: Vec<(usize, usize, [u8; 32])> = Vec::new();
@@ -57,7 +75,7 @@ fn r1cs_to_spartan(r1cs: &mut R1cs<S>) //, inputs??) -> (R1CSInstance, Vec<Scala
     let inst = R1CSInstance::new(num_cons, num_vars, num_inputs, &A, &B, &C).unwrap();
 
     // check if the instance we created is satisfiable
-    let res = inst.is_sat(&vars, &inputs);
+    let res = inst.is_sat(&wintess, &inputs);
     assert_eq!(res.unwrap(), true);
 
     (inst, vars, inputs, num_cons, num_vars, num_inputs)
@@ -98,11 +116,6 @@ fn lc_to_v(lc: &Lc, const_id: &usize) -> Vec<Variable> {
         v.push(var);
     }
     v
-}
-
-fn translate(id: &usize) -> usize {
-
-
 }
 
 fn get_variables() -> Vec<Variable> {

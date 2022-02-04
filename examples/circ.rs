@@ -6,7 +6,9 @@ use bellman::groth16::{
 };
 use bellman::Circuit;
 use bls12_381::{Scalar, Bls12};
-use libspartan::*;
+use libspartan::{Instance, NIZKGens, NIZK};
+use merlin::Transcript;
+
 use circ::front::datalog::{self, Datalog};
 use circ::front::zokrates::{self, Zokrates};
 use circ::front::c::{self, C};
@@ -221,7 +223,9 @@ fn main() {
 
     match options.backend {
         Backend::R1cs { action, proof, prover_key, verifier_key, .. } => {
-            println!("Converting to r1cs");
+            println!("Constraint sys {:#?}", cs);
+
+	    println!("Converting to r1cs");
             let r1cs = to_r1cs(cs, circ::front::zokrates::ZOKRATES_MODULUS.clone()); //spartan mod - 7237005577332262213973186563042994240857116359379907606001950938285454250989 (?)
             println!("Pre-opt R1cs size: {}", r1cs.constraints().len());
             let r1cs = reduce_linearities(r1cs);
@@ -232,10 +236,8 @@ fn main() {
                 }
 		ProofAction::Spartan => {
 		    println!("Converting R1CS to Spartan");
-
-		    r1cs_to_spartan(&r1cs);
-/*    
-		    let (inst, vars, inps, num_cons, num_vars, num_inputs) = r1cs_to_spartan(&r1cs);
+ 
+		    let (inst, vars, inps, num_cons, num_vars, num_inputs) = r1cs_to_spartan(r1cs);
 
 		    println!("Proving with Spartan");
 		    // produce public parameters
@@ -244,8 +246,8 @@ fn main() {
 		    let mut prover_transcript = Transcript::new(b"nizk_example");
 		    let pf = NIZK::prove(&inst, vars, &inps, &gens, &mut prover_transcript);		    
 		    // write proof file
-		    let mut pf_file = File::create(proof).unwrap();
-                    pf.write(&mut pf_file).unwrap();
+		    //let mut pf_file = File::create(proof).unwrap();
+                    //pf.write(&mut pf_file).unwrap();
 
                     println!("Verifying with Spartan");
                     // verify proof
@@ -254,7 +256,7 @@ fn main() {
 			.verify(&inst, &inps, &mut verifier_transcript, &gens)
 			.is_ok());
 		    println!("proof verification successful!");
-*/
+
 		}
                 ProofAction::Prove => {
                     println!("Proving");

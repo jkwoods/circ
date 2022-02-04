@@ -1,4 +1,4 @@
-Options { path: "ex.c", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: Some("inp"), rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", action: Prove } }
+Options { path: "ex.c", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: Some("add_i"), rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", action: Count } }
 Done with IR optimization
 Converting to r1cs
 Lc {
@@ -93,7 +93,7 @@ Lc {
     public_idxs: {},
     values: Some(
         {
-            0: 4,
+            0: 3,
             37: 1,
             34: 0,
             31: 0,
@@ -105,9 +105,9 @@ Lc {
             13: 0,
             10: 0,
             7: 0,
-            4: 1,
-            1: 3,
-            35: 7,
+            4: 0,
+            1: 5,
+            35: 8,
             32: 0,
             29: 0,
             26: 0,
@@ -117,8 +117,8 @@ Lc {
             14: 0,
             11: 0,
             8: 0,
-            5: 0,
-            2: 1,
+            5: 1,
+            2: 0,
             36: 0,
             33: 0,
             30: 0,
@@ -130,7 +130,7 @@ Lc {
             12: 0,
             9: 0,
             6: 0,
-            3: 1,
+            3: 0,
         },
     ),
     constraints: [
@@ -1010,4 +1010,4 @@ Lc {
     ],
 }
 Pre-opt R1cs size: 37
-Proving
+Final R1cs size: 33

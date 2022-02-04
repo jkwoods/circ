@@ -8,6 +8,18 @@ use core::ops::Shr;
 
 use log::debug;
 use std::collections::HashMap;
+use gmp_mpfr_sys::gmp::limb_t;
+use lazy_static::lazy_static;
+
+lazy_static! {
+    pub static ref SPARTAN_MODULUS: Integer = Integer::from_str_radix(
+        "7237005577332262213973186563042994240857116359379907606001950938285454250989",
+        // "52435875175126190479447740508185965837690552500527637822603658699938581184513",
+         10
+    ).unwrap();
+
+}
+
 
 #[derive(Debug)]
 pub struct Variable {
@@ -94,35 +106,21 @@ pub fn r1cs_to_spartan<S: Eq + Hash + Clone + Display>(r1cs: R1cs<S>) -> (Instan
 
 fn int_to_scalar(i: &Integer) -> Scalar {
     let mut accumulator = Scalar::zero();
-    let m = Scalar::from(256 as u32);
- 
+    let limb_bits = (std::mem::size_of::<limb_t>() as u64) << 3;
+    assert_eq!(limb_bits, 64);
+
+    let two: u64 = 2;
+    let mut m = Scalar::from(two.pow(63) as u64);
+    m = m * Scalar::from(2 as u64);
+    //println!("in int2scal i={:#?}", i); 
+
     // as_ref yeilds a least-significant-first array.
     for digit in i.as_ref().iter().rev() {
+	//println!("digit: {:#?}", digit);
         accumulator *= m;
         accumulator += Scalar::from(*digit as u64);
     }
     return accumulator; 
-
-
-
-
-  
-/*    let zero = Integer::from_str_radix("0", 16).unwrap();
-    let m = Integer::from_str_radix("100", 16).unwrap(); //256
-
-    let mut bytes = [0u8; 64];
-    
-    let mut j = 0;
-    while i != zero {
-	let small = i % m;
-	bytes[j] = small.to_u32().unwrap() as u8; // endianess?
-	i = i.shr(8); // floor(tmp/8)
-	j = j + 1;
-    }
-
-    let s = Scalar::from_bytes_mod_order_wide(&bytes);
-    return s;
-*/
 
 }
 
@@ -141,13 +139,14 @@ fn lc_to_v(lc: &Lc, const_id: usize) -> Vec<Variable> {
 	if *k >= const_id { panic!("Error: variable number off") }
 
         let scalar = int_to_scalar(&m);
-        let var = Variable {
+        //println!("int to scalar test: {:#?} -> {:#?}", m, scalar.to_bytes());
+	let var = Variable {
             id: *k, //translate(k),
             value: scalar.to_bytes(),
         };
 	v.push(var);
     }
-    if lc.constant != Integer::from(0) {
+    if lc.constant != Integer::from(0 as u32) {
 	let scalar = int_to_scalar(&lc.constant);
         let var = Variable {
             id: const_id,

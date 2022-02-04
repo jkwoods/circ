@@ -226,7 +226,8 @@ fn main() {
             println!("Constraint sys {:#?}", cs);
 
 	    println!("Converting to r1cs");
-            let r1cs = to_r1cs(cs, circ::front::zokrates::ZOKRATES_MODULUS.clone()); //spartan mod - 7237005577332262213973186563042994240857116359379907606001950938285454250989 (?)
+
+            let r1cs = to_r1cs(cs, circ::target::r1cs::spartan::SPARTAN_MODULUS.clone());
             println!("Pre-opt R1cs size: {}", r1cs.constraints().len());
             let r1cs = reduce_linearities(r1cs);
 

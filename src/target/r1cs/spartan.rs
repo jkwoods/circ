@@ -23,7 +23,7 @@ lazy_static! {
 
 #[derive(Debug)]
 pub struct Variable {
-    id: usize,
+    sid: usize,
     value: [u8; 32],
 }
 
@@ -32,38 +32,72 @@ pub struct Variable {
 pub fn r1cs_to_spartan<S: Eq + Hash + Clone + Display>(r1cs: R1cs<S>) -> (Instance, Assignment, Assignment, usize, usize, usize)
 {
 
+    // spartan format mapper: CirC -> Spartan
+    let mut wit = Vec::new();
+    let mut inp = Vec::new();
+    let mut trans: HashMap<usize, usize> = HashMap::new(); // Circ -> spartan ids
+    let mut itrans: HashMap<usize, usize> = HashMap::new(); // Circ -> spartan ids
+
     // assume no public inputs for now
     assert!(r1cs.public_idxs.len() == 0);
-    let num_inputs = 0; //r1cs.vals.len();
-
-    let mut inputs = vec![Scalar::zero().to_bytes(); num_inputs];
-    let assn_inputs = InputsAssignment::new(&inputs).unwrap();
-
-    // witness
-    let num_vars = r1cs.next_idx;
-
-    let mut wit: Vec<Variable> = Vec::new();
-    let mut witness = vec![Scalar::zero().to_bytes(); num_vars];
 
     // TODO if not input?
     match r1cs.values {
 	Some(_) => 
 	    for (k,v) in r1cs.values.as_ref().unwrap() { // CirC id, Integer
-	
+
+		let mut name = r1cs.idxs_signals.get(k).unwrap().to_string();
 		let scalar = int_to_scalar(&v);
-        	let var = Variable {
-            	    id: *k, //translate(k),
-            	    value: scalar.to_bytes(),
-        	};	
-	    	wit.push(var);
- 	    	witness[*k] = scalar.to_bytes(); // ordering (?) - TODO
+
+
+		if name.contains("main_f0_lex0_w"){
+		    // witness
+		    println!("As witness: {}", name);
+
+		    trans.insert(*k, wit.len());
+		    wit.push(scalar.to_bytes());
+		    //witness[translate(*k,t_wit)] = scalar.to_bytes();
+
+		} else if name.contains("main_f0_lex0_"){
+		    // input
+		    println!("As input: {}", name);
+	
+                    itrans.insert(*k, inp.len());
+                    inp.push(scalar.to_bytes());
+		    //inputs[translate(*k,t_inp)] = scalar.to_bytes();
+	
+		} else {
+		    // witness
+                    println!("As witness: {}", name);
+		    
+		    trans.insert(*k, wit.len());
+                    wit.push(scalar.to_bytes());
+		    //witness[translate(*k,t_wit)] = scalar.to_bytes();
+
+		}
+	
 	    }
 	None 	=> panic!("Tried to run Spartan without inputs/witness"),
     }
 
-    let assn_witness = VarsAssignment::new(&witness).unwrap();
-    let const_id = r1cs.next_idx;
- 
+    assert_eq!(wit.len() + inp.len(), r1cs.next_idx);
+
+    let num_vars = wit.len();
+    let const_id = wit.len();
+
+    let assn_witness = VarsAssignment::new(&wit).unwrap();
+
+    let num_inputs = inp.len();
+    let assn_inputs = InputsAssignment::new(&inp).unwrap();    
+
+    for (cid,sid) in itrans{
+        println!("input translation cid, sid = {}, {}", cid, sid);
+	trans.insert(cid, sid + const_id + 1);
+    }
+
+    println!("Translation Mapping: {:#?}", trans);
+    println!("const id {}", const_id);
+
     // circuit
     let mut A: Vec<(usize, usize, [u8; 32])> = Vec::new();
     let mut B: Vec<(usize, usize, [u8; 32])> = Vec::new();
@@ -73,19 +107,19 @@ pub fn r1cs_to_spartan<S: Eq + Hash + Clone + Display>(r1cs: R1cs<S>) -> (Instan
     for (lc_a, lc_b, lc_c) in r1cs.constraints.iter() {
 
         // circ Lc (const, monomials <Integer>) -> Vec<Integer> -> Vec<Variable>
-	let a = lc_to_v(&lc_a, const_id);
-        let b = lc_to_v(&lc_b, const_id);
-	let c = lc_to_v(&lc_c, const_id);
+	let a = lc_to_v(&lc_a, const_id, &trans);
+        let b = lc_to_v(&lc_b, const_id, &trans);
+	let c = lc_to_v(&lc_c, const_id, &trans);
 
 	// constraint # x identifier (vars, 1, inp)
-        for Variable { id, value } in a {
-            A.push((i, id, value));
+        for Variable { sid, value } in a {
+            A.push((i, sid, value));
 	}
-	for Variable { id, value } in b { 
-  	    B.push((i, id, value));
+	for Variable { sid, value } in b { 
+  	    B.push((i, sid, value));
 	}
-	for Variable { id, value } in c {
-            C.push((i, id, value));
+	for Variable { sid, value } in c {
+            C.push((i, sid, value));
 	}
 
         i += 1;
@@ -124,15 +158,9 @@ fn int_to_scalar(i: &Integer) -> Scalar {
 
 }
 
-// figure out input or witness, put into Spartan format: z = [vars, 1, inputs]
-fn translate(k: &usize) -> usize {
-    return 0; // TODO
-    // i think it may be a direct mapping ?
-
-}
 
 // circ Lc (const, monomials <Integer>) -> Vec<Variable>
-fn lc_to_v(lc: &Lc, const_id: usize) -> Vec<Variable> {
+fn lc_to_v(lc: &Lc, const_id: usize, trans: &HashMap<usize,usize>) -> Vec<Variable> {
     let mut v: Vec<Variable> = Vec::new();
 
     for (k,m) in &lc.monomials {
@@ -141,7 +169,7 @@ fn lc_to_v(lc: &Lc, const_id: usize) -> Vec<Variable> {
         let scalar = int_to_scalar(&m);
         //println!("int to scalar test: {:#?} -> {:#?}", m, scalar.to_bytes());
 	let var = Variable {
-            id: *k, //translate(k),
+            sid: trans.get(k).unwrap().clone(),
             value: scalar.to_bytes(),
         };
 	v.push(var);
@@ -149,7 +177,7 @@ fn lc_to_v(lc: &Lc, const_id: usize) -> Vec<Variable> {
     if lc.constant != Integer::from(0 as u32) {
 	let scalar = int_to_scalar(&lc.constant);
         let var = Variable {
-            id: const_id,
+            sid: const_id,
             value: scalar.to_bytes(),
         };
         v.push(var);

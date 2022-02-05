@@ -223,6 +223,7 @@ version = "0.1.0"
 dependencies = [
  "approx",
  "bellman",
+ "bincode",
  "bls12_381",
  "curve25519-dalek",
  "env_logger",
@@ -247,6 +248,7 @@ dependencies = [
  "rand 0.8.4",
  "rsmt2",
  "rug",
+ "serde",
  "serde_json",
  "spartan",
  "structopt",

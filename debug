@@ -1,0 +1,1 @@
+Options { path: "/home/elefthei/SGD/cfiles/labor.c", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: Some("blank_i"), rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", action: Spartan } }

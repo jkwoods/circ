@@ -31,6 +31,11 @@ use structopt::clap::arg_enum;
 use std::io::Read;
 use structopt::StructOpt;
 
+//timing + proof sizes
+use std::time::{Duration, Instant};
+use serde::ser::Serialize;
+use serde_json::Result;
+use bincode;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "circ", about = "CirC: the circuit compiler")]
@@ -241,22 +246,36 @@ fn main() {
 		    let (inst, vars, inps, num_cons, num_vars, num_inputs) = r1cs_to_spartan(r1cs);
 
 		    println!("Proving with Spartan");
+		    let prover = Instant::now();
+
 		    // produce public parameters
 		    let gens = NIZKGens::new(num_cons, num_vars, num_inputs);
 		    // produce proof
 		    let mut prover_transcript = Transcript::new(b"nizk_example");
 		    let pf = NIZK::prove(&inst, vars, &inps, &gens, &mut prover_transcript);		    
-		    // write proof file
+	
+                     let prover_ms = prover.elapsed().as_millis();
+   		     //let innerproof = &pf.r1cs_sat_proof;
+        	     //let proof_len = bincode::serialize(innerproof).unwrap().len();
+      		     //let comm_len = bincode::serialize(&innerproof.comm_vars).unwrap().len();
+// TODO ^
+
+   	            // write proof file
 		    //let mut pf_file = File::create(proof).unwrap();
                     //pf.write(&mut pf_file).unwrap();
 
                     println!("Verifying with Spartan");
-                    // verify proof
+		    let verifier = Instant::now();                    
+
+		    // verify proof
 		    let mut verifier_transcript = Transcript::new(b"nizk_example");
 		    assert!(pf
 			.verify(&inst, &inps, &mut verifier_transcript, &gens)
 			.is_ok());
+
+		    let verifier_ms = verifier.elapsed().as_millis();
 		    println!("proof verification successful!");
+         //           eprintln!("{}, {}, {}, {}", prover_ms, verifier_ms, comm_len, proof_len);
 
 		}
                 ProofAction::Prove => {

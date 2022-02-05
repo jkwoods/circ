@@ -668,9 +668,10 @@ impl CGen {
                 }
                 ExternalDeclaration::FunctionDefinition(ref fn_def) => {
                     debug!("{:#?}", fn_def.node.clone());
-                    // println!("function: {:#?}", fn_def.node);
+                    //println!("function: {:#?}", fn_def.node);
                     let fn_info = ast_utils::get_fn_info(&fn_def.node);
-                    self.circ.enter_fn(fn_info.name.to_owned(), fn_info.ret_ty.clone());
+                    println!("function name: {:#?}", fn_info.name);
+		    self.circ.enter_fn(fn_info.name.to_owned(), fn_info.ret_ty.clone());
                     for arg in fn_info.args.iter() {
                         // TODO: self.gen_decl(arg);
                         let p = &arg.specifiers[0];

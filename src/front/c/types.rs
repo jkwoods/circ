@@ -69,7 +69,7 @@ pub fn is_signed_int(ty: Ty) -> bool {
 
 pub fn is_unsigned_int(ty: Ty) -> bool {
     if let Ty::Int(s, w) = ty {
-        if !s && (w == 8 || w == 16 || w == 32 || w == 64) {
+        if !s && (w == 8 || w == 16 || w == 32 || w == 64 ) {
             return !s;
         }
         return s;

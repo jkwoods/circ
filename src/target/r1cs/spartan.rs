@@ -14,7 +14,6 @@ use lazy_static::lazy_static;
 lazy_static! {
     pub static ref SPARTAN_MODULUS: Integer = Integer::from_str_radix(
         "7237005577332262213973186563042994240857116359379907606001950938285454250989",
-        // "52435875175126190479447740508185965837690552500527637822603658699938581184513",
          10
     ).unwrap();
 
@@ -52,27 +51,24 @@ pub fn r1cs_to_spartan<S: Eq + Hash + Clone + Display>(r1cs: R1cs<S>) -> (Instan
 
 		if name.contains("main_f0_lex0_w"){
 		    // witness
-		    println!("As witness: {}", name);
+		    //println!("As witness: {}", name);
 
 		    trans.insert(*k, wit.len());
 		    wit.push(scalar.to_bytes());
-		    //witness[translate(*k,t_wit)] = scalar.to_bytes();
 
 		} else if name.contains("main_f0_lex0_"){
 		    // input
-		    println!("As input: {}", name);
+		    //println!("As input: {}", name);
 	
                     itrans.insert(*k, inp.len());
                     inp.push(scalar.to_bytes());
-		    //inputs[translate(*k,t_inp)] = scalar.to_bytes();
 	
 		} else {
 		    // witness
-                    println!("As witness: {}", name);
+                    //println!("As witness: {}", name);
 		    
 		    trans.insert(*k, wit.len());
                     wit.push(scalar.to_bytes());
-		    //witness[translate(*k,t_wit)] = scalar.to_bytes();
 
 		}
 	
@@ -90,13 +86,17 @@ pub fn r1cs_to_spartan<S: Eq + Hash + Clone + Display>(r1cs: R1cs<S>) -> (Instan
     let num_inputs = inp.len();
     let assn_inputs = InputsAssignment::new(&inp).unwrap();    
 
+    //drop inp and wit vecs
+    inp = Vec::new();
+    wit = Vec::new();
+
     for (cid,sid) in itrans{
-        println!("input translation cid, sid = {}, {}", cid, sid);
+//        println!("input translation cid, sid = {}, {}", cid, sid);
 	trans.insert(cid, sid + const_id + 1);
     }
 
-    println!("Translation Mapping: {:#?}", trans);
-    println!("const id {}", const_id);
+//    println!("Translation Mapping: {:#?}", trans);
+//    println!("const id {}", const_id);
 
     // circuit
     let mut A: Vec<(usize, usize, [u8; 32])> = Vec::new();

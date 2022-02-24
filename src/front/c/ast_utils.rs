@@ -18,7 +18,7 @@ pub struct DeclInfo {
 
 pub struct ConstIteration {
     pub name: String,
-    pub val: i32,
+    pub val: i64,
 }
 
 impl Display for FnInfo {
@@ -96,10 +96,11 @@ fn compress_type(ts: Vec<Option<Ty>>) -> Option<Ty> {
 
 fn type_(t: TypeSpecifier) -> Option<Ty> {
     return match t {
-        TypeSpecifier::Int => Some(Ty::Int(true, 32)),
-        TypeSpecifier::Unsigned => Some(Ty::Int(false, 32)), // Some(Ty::Int(false, 32)),
+        TypeSpecifier::Int => Some(Ty::Int(true, 64)),
+        TypeSpecifier::Unsigned => Some(Ty::Int(false, 64)), // Some(Ty::Int(false, 32)),
         TypeSpecifier::Bool => Some(Ty::Bool),
-        TypeSpecifier::Void => None,
+        TypeSpecifier::Long => Some(Ty::Int(true, 64)),
+ 	TypeSpecifier::Void => None,
         _ => unimplemented!("Type {:#?} not implemented yet.", t),
     };
 }

@@ -184,14 +184,14 @@ impl CGen {
         }
     }
     
-    fn fold_(&mut self, expr: CTerm) -> i32 {
+    fn fold_(&mut self, expr: CTerm) -> i64 {
         let term_ = fold(&expr.term.term(&self.circ));
         let cterm_ = CTerm {
-            term: CTermData::CInt(true, 32, term_),
+            term: CTermData::CInt(true, 64, term_),
             udef: false,
         };
         let val = const_int(cterm_).ok().unwrap();
-        val.to_i32().unwrap()
+        val.to_i64().unwrap()
     }
 
     fn inner_derived_type_(&mut self, base_ty: Ty, d: DerivedDeclarator) -> Ty {
@@ -276,7 +276,7 @@ impl CGen {
         match c {
             // TODO: move const integer function out to separate function
             Constant::Integer(i) => CTerm {
-                term: CTermData::CInt(true, 32, bv_lit(i.number.parse::<i32>().unwrap(), 32)),
+                term: CTermData::CInt(true, 64, bv_lit(i.number.parse::<i64>().unwrap(), 64)),
                 udef: false,
             },
             _ => unimplemented!("Constant {:#?} hasn't been implemented", c),
@@ -355,13 +355,13 @@ impl CGen {
                         if f == shl || f == shr {
                             let a_t = fold(&a.term.term(&self.circ));
                             a = CTerm {
-                                term: CTermData::CInt(true, 32, a_t),
+                                term: CTermData::CInt(true, 64, a_t),
                                 udef: false,
                             };
 
                             let b_t = fold(&b.term.term(&self.circ));
                             b = CTerm {
-                                term: CTermData::CInt(true, 32, b_t),
+                                term: CTermData::CInt(true, 64, b_t),
                                 udef: false,
                             };
                         }
@@ -376,7 +376,7 @@ impl CGen {
                         let f = self.get_u_op(u_op.operator.node);
                         let i = self.gen_expr(u_op.operand.node.clone());
                         let one = CTerm {
-                            term: CTermData::CInt(true, 32, bv_lit(1, 32)),
+                            term: CTermData::CInt(true, 64, bv_lit(1, 64)),
                             udef: false
                         };
                         let e = f(i, one).unwrap();
@@ -413,10 +413,10 @@ impl CGen {
                     let expr = self.gen_init(inner_type.clone(), li.node.initializer.node.clone());
                     values.push(expr)
                 }
-                let id = self.circ.zero_allocate(values.len(), 32, num_bits(inner_type.clone()));
+                let id = self.circ.zero_allocate(values.len(), 64, num_bits(inner_type.clone()));
 
                 for (i,v) in values.iter().enumerate() {
-                    let offset = bv_lit(i, 32);
+                    let offset = bv_lit(i, 64);
                     let v_ = v.term.term(&self.circ);
                     self.circ.store(id, offset, v_);
                 }
@@ -441,7 +441,7 @@ impl CGen {
         } else {
             expr = match derived_ty {
                 Ty::Array(size, ref ty) => {
-                    let id = self.circ.zero_allocate(size.unwrap(), 32, num_bits(*ty.clone()));
+                    let id = self.circ.zero_allocate(size.unwrap(), 64, num_bits(*ty.clone()));
                     CTerm {
                         term: CTermData::CArray(*ty.clone(), Some(id)), 
                         udef: false,
@@ -634,7 +634,8 @@ impl CGen {
                 };
             }
             Statement::Expression(expr) => {
-                let e = expr.unwrap().node;
+                //println!("{:#?}",expr);
+		let e = expr.unwrap().node;
                 self.gen_expr(e);
             }
             Statement::For(for_stmt) => {

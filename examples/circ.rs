@@ -228,13 +228,13 @@ fn main() {
 
     match options.backend {
         Backend::R1cs { action, proof, prover_key, verifier_key, .. } => {
-            println!("Constraint sys {:#?}", cs);
-
 	    println!("Converting to r1cs");
 
             let r1cs = to_r1cs(cs, circ::target::r1cs::spartan::SPARTAN_MODULUS.clone());
             println!("Pre-opt R1cs size: {}", r1cs.constraints().len());
-            let r1cs = reduce_linearities(r1cs);
+//            let r1cs = reduce_linearities(r1cs);
+	    println!("Post-opt R1cs size: {}", r1cs.constraints().len());
+	    let num_r1cs = r1cs.constraints().len().clone();
 
             match action {
                 ProofAction::Count => {
@@ -255,10 +255,10 @@ fn main() {
 		    let pf = NIZK::prove(&inst, vars, &inps, &gens, &mut prover_transcript);		    
 	
                      let prover_ms = prover.elapsed().as_millis();
-   		     //let innerproof = &pf.r1cs_sat_proof;
-        	     //let proof_len = bincode::serialize(innerproof).unwrap().len();
+   		     let innerproof = &pf.r1cs_sat_proof;
+        	     let proof_len = bincode::serialize(innerproof).unwrap().len();
       		     //let comm_len = bincode::serialize(&innerproof.comm_vars).unwrap().len();
-// TODO ^
+                     let comm_len = -1;
 
    	            // write proof file
 		    //let mut pf_file = File::create(proof).unwrap();
@@ -275,7 +275,9 @@ fn main() {
 
 		    let verifier_ms = verifier.elapsed().as_millis();
 		    println!("proof verification successful!");
-         //           eprintln!("{}, {}, {}, {}", prover_ms, verifier_ms, comm_len, proof_len);
+                    
+		    println!("{:#?}, r1cs: {}, prover ms: {}, verifier ms: {}, comm len: {}, proof len: {}", path_buf, num_r1cs, prover_ms, verifier_ms, comm_len, proof_len);
+		    eprintln!("{:#?}, r1cs: {}, prover ms: {}, verifier ms: {}, comm len: {}, proof len: {}", path_buf, num_r1cs, prover_ms, verifier_ms, comm_len, proof_len);
 
 		}
                 ProofAction::Prove => {

@@ -117,15 +117,15 @@ impl CGen {
                         }
                         Ty::Int(s,w) => {
                             CTermData::CInt(s, w, self.circ.load(i, idx))
-                        } 
+                        }
                         // TODO: Flatten array so this case doesn't occur
                         // Ty::Array(_,t) => {
                         //     CTermData::CArray(*t, id)
                         // }
                         _ => unimplemented!()
-                    }, 
+                    },
                     udef: false,
-                })  
+                })
             }
             (a, b) => Err(format!("[Array Select] cannot index {} by {}", b, a))
         }
@@ -183,7 +183,7 @@ impl CGen {
             _ => unimplemented!("Invalid left hand value"),
         }
     }
-    
+
     fn fold_(&mut self, expr: CTerm) -> i32 {
         let term_ = fold(&expr.term.term(&self.circ));
         let cterm_ = CTerm {
@@ -206,7 +206,7 @@ impl CGen {
                         Some(size),
                         Box::new(base_ty),
                     )
-                } 
+                }
                 return Ty::Array(
                     None,
                     Box::new(base_ty),
@@ -236,7 +236,7 @@ impl CGen {
         derived_ty
     }
 
-    /// Interpret the party association of input parameters 
+    /// Interpret the party association of input parameters
     pub fn interpret_visibility(&mut self, ext: &DeclarationSpecifier) -> Option<PartyId> {
         if let DeclarationSpecifier::Extension(nodes) = ext {
             assert!(nodes.len() == 1);
@@ -308,13 +308,6 @@ impl CGen {
         }
     }
 
-    fn get_u_op(&self, op: UnaryOperator) -> fn(CTerm, CTerm) -> Result<CTerm, String> {
-        match op {
-            UnaryOperator::PostIncrement => add,
-            _ => unimplemented!("UnaryOperator {:#?} hasn't been implemented", op),
-        }
-    }
-
     fn gen_expr(&mut self, expr: Expression) -> CTerm {
         let res = match expr.clone() {
             Expression::Identifier(node) => Ok(self
@@ -330,7 +323,7 @@ impl CGen {
                         let mod_res = self.mod_lval(lval, e.clone());
                         self.unwrap(mod_res);
                         Ok(e)
-                    } 
+                    }
                     BinaryOperator::AssignPlus | BinaryOperator::AssignDivide => {
                         let f = self.get_bin_op(bin_op.operator.node);
                         let i = self.gen_expr(bin_op.lhs.node.clone());
@@ -350,8 +343,8 @@ impl CGen {
                         let f = self.get_bin_op(bin_op.operator.node);
                         let mut a = self.gen_expr(bin_op.lhs.node);
                         let mut b = self.gen_expr(bin_op.rhs.node);
-                        
-                        // TODO: fix hack, const int check for shifting 
+
+                        // TODO: fix hack, const int check for shifting
                         if f == shl || f == shr {
                             let a_t = fold(&a.term.term(&self.circ));
                             a = CTerm {
@@ -373,17 +366,30 @@ impl CGen {
                 let u_op = node.node;
                 match u_op.operator.node {
                     UnaryOperator::PostIncrement => {
-                        let f = self.get_u_op(u_op.operator.node);
                         let i = self.gen_expr(u_op.operand.node.clone());
                         let one = CTerm {
                             term: CTermData::CInt(true, 32, bv_lit(1, 32)),
                             udef: false
                         };
-                        let e = f(i, one).unwrap();
+                        let e = add(i, one).unwrap();
                         let lval = self.lval(u_op.operand);
                         let mod_res = self.mod_lval(lval, e.clone());
                         self.unwrap(mod_res);
-                        Ok(e)                        
+                        Ok(e)
+                    }
+                    UnaryOperator::Minus => {
+                        let i = self.gen_expr(u_op.operand.node.clone());
+                        let zero = CTerm {
+                            term: CTermData::CInt(true, 32, bv_lit(0, 32)),
+                            udef: false
+                        };
+                        let one = CTerm {
+                            term: CTermData::CInt(true, 32, bv_lit(1, 32)),
+                            udef: false
+                        };
+                        let minusone = sub(zero, one).unwrap();
+                        let e = mul(i, minusone).unwrap();
+                        Ok(e)
                     }
                     _ => unimplemented!("UnaryOperator {:#?} hasn't been implemented", u_op),
                 }
@@ -422,7 +428,7 @@ impl CGen {
                 }
 
                 CTerm {
-                    term: CTermData::CArray(inner_type, Some(id)), 
+                    term: CTermData::CArray(inner_type, Some(id)),
                     udef: false,
                 }
             }
@@ -443,7 +449,7 @@ impl CGen {
                 Ty::Array(size, ref ty) => {
                     let id = self.circ.zero_allocate(size.unwrap(), 32, num_bits(*ty.clone()));
                     CTerm {
-                        term: CTermData::CArray(*ty.clone(), Some(id)), 
+                        term: CTermData::CArray(*ty.clone(), Some(id)),
                         udef: false,
                     }
                 }
@@ -464,7 +470,7 @@ impl CGen {
         let init: Option<ConstIteration> = match for_stmt.initializer.node {
             ForInitializer::Declaration(d) => {
                 let decl_info = get_decl_info(d.node.clone());
-                let name = decl_info.name; 
+                let name = decl_info.name;
                 let expr = self.gen_decl(d.node.clone());
                 let val = self.fold_(expr);
                 Some(
@@ -510,7 +516,7 @@ impl CGen {
                                 val: val,
                             }
                         )
-                    } 
+                    }
                     BinaryOperator::LessOrEqual => {
                         Some(
                             ConstIteration {
@@ -520,11 +526,11 @@ impl CGen {
                         )
                     }
                     _ => None
-                }                        
+                }
             }
             _ => None
         };
-        
+
         let step: Option<ConstIteration> = match for_stmt.step.unwrap().node {
             Expression::UnaryOperator(u_op) => {
                 let name = name_from_ident(&u_op.node.operand.node);
@@ -611,7 +617,7 @@ impl CGen {
                 self.unwrap(t_res);
                 self.gen_stmt(node.node.then_statement.node);
                 self.circ.exit_condition();
-                
+
                 if let Some(f_cond) = node.node.else_statement {
                     let f_term = term!(Op::Not; cond.term.term(&self.circ));
                     let f_res = self.circ.enter_condition(f_term);

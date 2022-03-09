@@ -3,14 +3,14 @@
 mod parser;
 mod term;
 
-use super::FrontEnd;
+use super::{FrontEnd, Mode};
 use crate::circify::{Circify, Loc, Val};
 use crate::ir::proof::{self, ConstraintMetadata};
 use crate::ir::term::*;
 use log::debug;
 use rug::Integer;
 use std::collections::HashMap;
-use std::fmt::{self, Display, Formatter};
+use std::fmt::Display;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use zokrates_pest_ast as ast;
@@ -27,7 +27,7 @@ pub const PROVER_VIS: Option<PartyId> = Some(proof::PROVER_ID);
 /// Public visibility
 pub const PUBLIC_VIS: Option<PartyId> = None;
 
-/// Inputs to the ZoKrates compilier
+/// Inputs to the ZoKrates compiler
 pub struct Inputs {
     /// The file to look for `main` in.
     pub file: PathBuf,
@@ -44,32 +44,6 @@ pub struct Inputs {
     pub inputs: Option<PathBuf>,
     /// The mode to generate for (MPC or proof). Effects visibility.
     pub mode: Mode,
-}
-
-#[derive(Clone, Copy, Debug)]
-/// Kind of circuit to generate. Effects privacy labels.
-pub enum Mode {
-    /// Generating an MPC circuit. Inputs are public or private (to a party in 1..N).
-    Mpc(u8),
-    /// Generating for a proof circuit. Inputs are public of private (to the prover).
-    Proof,
-    /// Generating for an optimization circuit. Inputs are existentially quantified.
-    /// There should be only one output, which will be maximized.
-    Opt,
-    /// Find inputs that yeild an output at least this large,
-    /// and then prove knowledge of them.
-    ProofOfHighValue(u64),
-}
-
-impl Display for Mode {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match self {
-            &Mode::Mpc(n) => write!(f, "{}-pc", n),
-            &Mode::Proof => write!(f, "proof"),
-            &Mode::Opt => write!(f, "opt"),
-            &Mode::ProofOfHighValue(v) => write!(f, "proof_of_high_value({})", v),
-        }
-    }
 }
 
 /// The ZoKrates front-end. Implements [FrontEnd].
@@ -191,17 +165,16 @@ impl<'ast> ZGen<'ast> {
                 self.unwrap(decl_res, &i.index.span);
                 for j in s..e {
                     self.circ.enter_scope();
-                    let ass_res = self
-                        .circ
-                        .assign(Loc::local(v_name.clone()), Val::Term(
-                            match ty {
-                                Ty::Uint(8) => T::Uint(8, bv_lit(j, 8)),
-                                Ty::Uint(16) => T::Uint(16, bv_lit(j, 16)),
-                                Ty::Uint(32) => T::Uint(32, bv_lit(j, 32)),
-                                Ty::Field =>  T::Field(pf_lit(j)),
-                                _ => panic!("Unexpected type for iteration: {:?}", ty),
-                            }
-                        ));
+                    let ass_res = self.circ.assign(
+                        Loc::local(v_name.clone()),
+                        Val::Term(match ty {
+                            Ty::Uint(8) => T::Uint(8, bv_lit(j, 8)),
+                            Ty::Uint(16) => T::Uint(16, bv_lit(j, 16)),
+                            Ty::Uint(32) => T::Uint(32, bv_lit(j, 32)),
+                            Ty::Field => T::Field(pf_lit(j)),
+                            _ => panic!("Unexpected type for iteration: {:?}", ty),
+                        }),
+                    );
                     self.unwrap(ass_res, &i.index.span);
                     for s in &i.statements {
                         self.stmt(s);
@@ -625,6 +598,8 @@ impl<'ast> ZGen<'ast> {
         for (p, f) in &t {
             self.file_stack.push(p.to_owned());
             for func in &f.functions {
+                println!("fn {} in {}", func.id.value, self.cur_path().display());
+
                 debug!("fn {} in {}", func.id.value, self.cur_path().display());
                 self.functions.insert(
                     (self.cur_path().to_owned(), func.id.value.clone()),

@@ -103,7 +103,7 @@ impl MemVisitor for NonOblivComputer {
             self.mark(orig);
         }
     }
-    fn visit_select(&mut self, _orig: &Term, a: &Term, k: &Term) -> Option<Term> {
+    fn visit_select(&mut self, _orig: &Term, a: &Term, k: &Term) -> Option<Term> {        
         if let Op::Const(_) = k.op {
         } else {
             self.mark(a);
@@ -144,6 +144,11 @@ impl MemVisitor for Replacer {
     }
     fn visit_eq(&mut self, orig: &Term, _a: &Term, _b: &Term) -> Option<Term> {
         if let Some(a_seq) = self.sequences.get(&orig.cs[0]) {
+            // println!("visit eq: {}", orig);
+            // println!("cs: {:#?}", orig.cs);
+            // println!("cs[0]: {:#?}", orig.cs[0]);
+            // println!("cs[1]: {:#?}", orig.cs[1]);
+            // println!("sequences: {:#?}", self.sequences);
             let b_seq = self.sequences.get(&orig.cs[1]).expect("inconsistent eq");
             let eqs: Vec<Term> = a_seq
                 .iter()
@@ -182,7 +187,7 @@ impl MemVisitor for Replacer {
             self.sequences.insert(orig.clone(), a_seq);
         }
     }
-    fn visit_select(&mut self, orig: &Term, _a: &Term, k: &Term) -> Option<Term> {
+    fn visit_select(&mut self, orig: &Term, _a: &Term, k: &Term) -> Option<Term> {  
         if let Some(a_seq) = self.sequences.get(&orig.cs[0]) {
             debug!("Will replace select: {}", orig);
             let k_const = as_uint_constant(k)

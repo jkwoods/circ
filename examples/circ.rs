@@ -6,15 +6,21 @@ use bellman::groth16::{
 };
 use bellman::Circuit;
 use bls12_381::{Scalar, Bls12};
+use libspartan::{Instance, NIZKGens, NIZK};
+use merlin::Transcript;
+
 use circ::front::datalog::{self, Datalog};
-use circ::front::zokrates::{self, Mode, Zokrates};
-use circ::front::FrontEnd;
+use circ::front::zokrates::{self, Zokrates};
+use circ::front::c::{self, C};
+use circ::front::{Mode, FrontEnd};
 use circ::ir::{opt::{opt, Opt}, term::extras::Letified};
 use circ::target::aby::output::write_aby_exec;
 use circ::target::aby::trans::to_aby;
 use circ::target::ilp::trans::to_ilp;
 use circ::target::r1cs::opt::reduce_linearities;
 use circ::target::r1cs::trans::to_r1cs;
+use circ::target::r1cs::spartan::r1cs_to_spartan;
+
 use circ::target::smt::find_model;
 use env_logger;
 use good_lp::default_solver;
@@ -24,6 +30,12 @@ use std::path::PathBuf;
 use structopt::clap::arg_enum;
 use std::io::Read;
 use structopt::StructOpt;
+
+//timing + proof sizes
+use std::time::{Duration, Instant};
+use serde::ser::Serialize;
+use serde_json::Result;
+use bincode;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "circ", about = "CirC: the circuit compiler")]
@@ -79,6 +91,7 @@ enum Backend {
         instance: PathBuf,
         #[structopt(long, default_value = "count")]
         action: ProofAction,
+
     },
     Smt {},
     Ilp {},
@@ -91,6 +104,7 @@ arg_enum! {
     enum Language {
         Zokrates,
         Datalog,
+        C,
         Auto,
     }
 }
@@ -99,6 +113,7 @@ arg_enum! {
 enum DeterminedLanguage {
     Zokrates,
     Datalog,
+    C,
 }
 
 arg_enum! {
@@ -108,6 +123,7 @@ arg_enum! {
         Prove,
         Setup,
         Verify,
+	Spartan,
     }
 }
 
@@ -123,12 +139,19 @@ fn determine_language(l: &Language, input_path: &PathBuf) -> DeterminedLanguage 
     match l {
         &Language::Datalog => DeterminedLanguage::Datalog,
         &Language::Zokrates => DeterminedLanguage::Zokrates,
+        &Language::C => DeterminedLanguage::C,
         &Language::Auto =>  {
             let p = input_path.to_str().unwrap();
             if p.ends_with(".zok") {
                 DeterminedLanguage::Zokrates
             } else if p.ends_with(".pl") {
                 DeterminedLanguage::Datalog
+            } else if p.ends_with(".c") {
+                DeterminedLanguage::C
+            } else if p.ends_with(".cpp") {
+                DeterminedLanguage::C
+            } else if p.ends_with(".cc") {
+                DeterminedLanguage::C
             } else {
                 println!("Could not deduce the input language from path '{}', please set the language manually", p);
                 std::process::exit(2)
@@ -169,13 +192,20 @@ fn main() {
             };
             Datalog::gen(inputs)
         }
+        DeterminedLanguage::C => {
+            let inputs = c::Inputs {
+                file: options.path,
+                inputs: options.frontend.inputs,
+                mode: mode.clone(),
+            };
+            C::gen(inputs)
+        }
     };
     let cs = match mode {
         Mode::Opt => opt(cs, vec![Opt::ConstantFold]),
         Mode::Mpc(_) => opt(
             cs,
-            vec![],
-            // vec![Opt::Sha, Opt::ConstantFold, Opt::Mem, Opt::ConstantFold],
+            vec![Opt::Sha, Opt::ConstantFold, Opt::Mem, Opt::ConstantFold],
         ),
         Mode::Proof | Mode::ProofOfHighValue(_) => opt(
             cs,
@@ -198,20 +228,64 @@ fn main() {
 
     match options.backend {
         Backend::R1cs { action, proof, prover_key, verifier_key, .. } => {
-            println!("Converting to r1cs");
-            let r1cs = to_r1cs(cs, circ::front::zokrates::ZOKRATES_MODULUS.clone());
+	    println!("Converting to r1cs");
+
+            let r1cs = to_r1cs(cs, circ::target::r1cs::spartan::SPARTAN_MODULUS.clone());
             println!("Pre-opt R1cs size: {}", r1cs.constraints().len());
-            let r1cs = reduce_linearities(r1cs);
+//            let r1cs = reduce_linearities(r1cs);
+	    println!("Post-opt R1cs size: {}", r1cs.constraints().len());
+	    let num_r1cs = r1cs.constraints().len().clone();
+
             match action {
                 ProofAction::Count => {
                     println!("Final R1cs size: {}", r1cs.constraints().len());
                 }
+		ProofAction::Spartan => {
+		    println!("Converting R1CS to Spartan");
+ 
+		    let (inst, vars, inps, num_cons, num_vars, num_inputs) = r1cs_to_spartan(r1cs);
+
+		    println!("Proving with Spartan");
+		    let prover = Instant::now();
+
+		    // produce public parameters
+		    let gens = NIZKGens::new(num_cons, num_vars, num_inputs);
+		    // produce proof
+		    let mut prover_transcript = Transcript::new(b"nizk_example");
+		    let pf = NIZK::prove(&inst, vars, &inps, &gens, &mut prover_transcript);		    
+	
+                     let prover_ms = prover.elapsed().as_millis();
+   		     let innerproof = &pf.r1cs_sat_proof;
+        	     let proof_len = bincode::serialize(innerproof).unwrap().len();
+      		     //let comm_len = bincode::serialize(&innerproof.comm_vars).unwrap().len();
+                     let comm_len = -1;
+
+   	            // write proof file
+		    //let mut pf_file = File::create(proof).unwrap();
+                    //pf.write(&mut pf_file).unwrap();
+
+                    println!("Verifying with Spartan");
+		    let verifier = Instant::now();                    
+
+		    // verify proof
+		    let mut verifier_transcript = Transcript::new(b"nizk_example");
+		    assert!(pf
+			.verify(&inst, &inps, &mut verifier_transcript, &gens)
+			.is_ok());
+
+		    let verifier_ms = verifier.elapsed().as_millis();
+		    println!("proof verification successful!");
+                    
+		    println!("{:#?}, r1cs: {}, prover ms: {}, verifier ms: {}, comm len: {}, proof len: {}", path_buf, num_r1cs, prover_ms, verifier_ms, comm_len, proof_len);
+		    eprintln!("{:#?}, r1cs: {}, prover ms: {}, verifier ms: {}, comm len: {}, proof len: {}", path_buf, num_r1cs, prover_ms, verifier_ms, comm_len, proof_len);
+
+		}
                 ProofAction::Prove => {
                     println!("Proving");
                     let rng = &mut rand::thread_rng();
                     let mut pk_file = File::open(prover_key).unwrap();
                     let pk = Parameters::<Bls12>::read(&mut pk_file, false).unwrap();
-                    let pf = create_random_proof(&r1cs, &pk, rng).unwrap();
+            	    let pf = create_random_proof(&r1cs, &pk, rng).unwrap();
                     let mut pf_file = File::create(proof).unwrap();
                     pf.write(&mut pf_file).unwrap();
                 }
@@ -237,8 +311,9 @@ fn main() {
         }
         Backend::Mpc { .. } => {
             println!("Converting to aby");
-            let aby = to_aby(cs);
-            write_aby_exec(aby, path_buf);
+            let lang = &String::from("zok");
+            to_aby(cs, &path_buf, &lang);
+            write_aby_exec(&path_buf, &lang);
         }
         Backend::Ilp { .. } => {
             println!("Converting to ilp");

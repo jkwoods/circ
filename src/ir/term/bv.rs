@@ -84,6 +84,7 @@ impl std::ops::Shl for BitVector {
     type Output = Self;
     fn shl(self, other: Self) -> Self {
         assert_eq!(self.width, other.width);
+	assert_ne!(other.uint.to_u32(), None);
         let r = BitVector {
             uint: (self.uint.shl(other.uint.to_u32().unwrap())).keep_bits(self.width as u32),
             width: self.width,
@@ -141,6 +142,7 @@ impl BitVector {
     /// arithmetic right shift
     pub fn ashr(mut self, other: &Self) -> Self {
         assert_eq!(self.width, other.width);
+        assert_ne!(other.uint.to_u32(), None);
         let n = other.uint.to_u32().unwrap();
         let b = self.uint.get_bit(self.width as u32 - 1);
         self.uint >>= n;
@@ -153,6 +155,7 @@ impl BitVector {
     /// logical right shift
     pub fn lshr(self, other: &Self) -> Self {
         assert_eq!(self.width, other.width);
+        assert_ne!(other.uint.to_u32(), None);
         let r = BitVector {
             uint: (self.uint >> other.uint.to_u32().unwrap()).keep_bits(self.width as u32),
             width: self.width,

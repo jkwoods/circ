@@ -103,7 +103,12 @@ impl CostModel {
                     "shr" => vec![BV_LSHR],
                     "sub" => vec![BV_SUB],
                     "mux" => vec![ITE],
-                    "ne" => vec![],
+                    "ne" => vec![Op::Not, Op::Eq],
+                    "bvudiv" => vec![BV_UDIV],
+                    "bvurem" => vec![BV_UREM],
+                    // added to pass test case
+                    "&&" => vec![AND],
+                    "||" => vec![OR],
                     _ => panic!("Unknown operator name: {}", name),
                 }
             };
@@ -247,7 +252,7 @@ fn build_ilp(c: &Computation, costs: &CostModel) -> SharingMap {
                 acc + v.clone() * *cost
             }),
     );
-
+    
     let (_opt, solution) = ilp.default_solve().unwrap();
 
     let mut assignment = TermMap::new();

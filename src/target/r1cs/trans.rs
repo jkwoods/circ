@@ -839,9 +839,7 @@ impl ToR1cs {
     fn assert(&mut self, t: Term) {
         debug!("Assert: {}", Letified(t.clone()));
         self.embed(t.clone());
-        println!("{} as boolean", &t);
         let lc = self.get_bool(&t).clone();
-        print!("{:#?}", lc);
 	self.assert_zero(lc - 1);
     }
 }
@@ -866,7 +864,6 @@ pub fn to_r1cs(cs: Computation, modulus: Integer) -> R1cs<String> {
         converter.assert(c);
     }
     
-    println!("R1CS: {:#?}", converter.r1cs);
     converter.r1cs
 }
 

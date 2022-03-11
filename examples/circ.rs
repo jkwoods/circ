@@ -233,7 +233,7 @@ fn main() {
             let r1cs = to_r1cs(cs, circ::target::r1cs::spartan::SPARTAN_MODULUS.clone());
             println!("Pre-opt R1cs size: {}", r1cs.constraints().len());
 //            let r1cs = reduce_linearities(r1cs);
-	    println!("Post-opt R1cs size: {}", r1cs.constraints().len());
+	    //println!("Post-opt R1cs size: {}", r1cs.constraints().len());
 	    let num_r1cs = r1cs.constraints().len().clone();
 
             match action {
@@ -277,7 +277,7 @@ fn main() {
 		    println!("proof verification successful!");
                     
 		    println!("{:#?}, r1cs: {}, prover ms: {}, verifier ms: {}, comm len: {}, proof len: {}", path_buf, num_r1cs, prover_ms, verifier_ms, comm_len, proof_len);
-		    eprintln!("{:#?}, r1cs: {}, prover ms: {}, verifier ms: {}, comm len: {}, proof len: {}", path_buf, num_r1cs, prover_ms, verifier_ms, comm_len, proof_len);
+		    //eprintln!("{:#?}, r1cs: {}, prover ms: {}, verifier ms: {}, comm len: {}, proof len: {}", path_buf, num_r1cs, prover_ms, verifier_ms, comm_len, proof_len);
 
 		}
                 ProofAction::Prove => {

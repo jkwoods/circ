@@ -307,14 +307,14 @@ impl CGen {
             _ => unimplemented!("BinaryOperator {:#?} hasn't been implemented", op),
         }
     }
-
+/*
     fn get_u_op(&self, op: UnaryOperator) -> fn(CTerm, CTerm) -> Result<CTerm, String> {
         match op {
             UnaryOperator::PostIncrement => add,
             _ => unimplemented!("UnaryOperator {:#?} hasn't been implemented", op),
         }
     }
-
+*/
     fn gen_expr(&mut self, expr: Expression) -> CTerm {
         let res = match expr.clone() {
             Expression::Identifier(node) => Ok(self
@@ -373,17 +373,31 @@ impl CGen {
                 let u_op = node.node;
                 match u_op.operator.node {
                     UnaryOperator::PostIncrement => {
-                        let f = self.get_u_op(u_op.operator.node);
+                        //let f = self.get_u_op(u_op.operator.node);
                         let i = self.gen_expr(u_op.operand.node.clone());
                         let one = CTerm {
                             term: CTermData::CInt(true, 64, bv_lit(1, 64)),
                             udef: false
                         };
-                        let e = f(i, one).unwrap();
+                        let e = add(i, one).unwrap();
                         let lval = self.lval(u_op.operand);
                         let mod_res = self.mod_lval(lval, e.clone());
                         self.unwrap(mod_res);
                         Ok(e)                        
+                    }
+                    UnaryOperator::Minus => {
+                        let i = self.gen_expr(u_op.operand.node.clone());
+                        let zero = CTerm {
+                            term: CTermData::CInt(true, 64, bv_lit(0, 64)),
+                            udef: false
+                        };
+                        let one = CTerm {
+                            term: CTermData::CInt(true, 64, bv_lit(1, 64)),
+                            udef: false
+                        };
+                        let minusone = sub(zero, one).unwrap();
+                        let e = mul(i, minusone).unwrap();
+                        Ok(e)
                     }
                     _ => unimplemented!("UnaryOperator {:#?} hasn't been implemented", u_op),
                 }

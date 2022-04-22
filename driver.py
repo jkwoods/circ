@@ -37,7 +37,7 @@ def check(features):
             set of features required
     """
 
-    cmd = ["cargo", "check", "--tests", "--examples", "--benches", "--bins"]
+    cmd = ["cargo", "+nightly", "check", "--tests", "--examples", "--benches", "--bins"]
     cargo_features = filter_cargo_features(features)
     if cargo_features:
        cmd = cmd + ["--features"] + cargo_features
@@ -57,7 +57,7 @@ def build(features):
     check(features)
     install(features)
 
-    cmd = ["cargo", "build"]
+    cmd = ["cargo", "+nightly", "build"]
     if mode:
         cmd += ["--"+mode]
     else:
@@ -89,7 +89,7 @@ def test(features):
 
     build(features)
 
-    test_cmd = ["cargo", "test"]
+    test_cmd = ["cargo", "+nightly", "test"]
     cargo_features = filter_cargo_features(features)
     if cargo_features:
         test_cmd = test_cmd + ["--features"] + cargo_features
@@ -114,7 +114,7 @@ def test(features):
 
 def format():
     print("formatting!")
-    subprocess.run(["cargo", "fmt", "--all"], check=True)
+    subprocess.run(["cargo", "+nightly", "fmt", "--all"], check=True)
 
 def lint():
     """
@@ -127,14 +127,14 @@ def lint():
     """
     print("linting!")
 
-    cmd = ["cargo", "clippy", "--tests", "--examples", "--benches", "--bins"]
+    cmd = ["cargo", "+nightly", "clippy", "--tests", "--examples", "--benches", "--bins"]
     cargo_features = filter_cargo_features(features)
     if cargo_features:
        cmd = cmd + ["--features"] + cargo_features
     subprocess.run(cmd, check=True)
 
 def flamegraph(features, extra):
-    cmd = ["cargo", "flamegraph"]
+    cmd = ["cargo", "+nightly", "flamegraph"]
     cargo_features = filter_cargo_features(features)
     if cargo_features:
         cmd = cmd + ["--features"] + cargo_features

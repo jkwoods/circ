@@ -43,6 +43,11 @@ use libspartan::{Instance, NIZKGens, NIZK};
 use merlin::Transcript;
 use circ::target::r1cs::spartan::r1cs_to_spartan;
 
+// use zki_sieve::{FromR1CSConverter, MemorySink, FilesSink};
+// use zkinterface::{TODO}
+// use circ::target::r1cs::zkif::r1cs_to_zkif;
+
+
 #[derive(Debug, StructOpt)]
 #[structopt(name = "circ", about = "CirC: the circuit compiler")]
 struct Options {
@@ -142,6 +147,7 @@ arg_enum! {
         Setup,
         Verify,
         Spartan,
+        Zkif,
     }
 }
 
@@ -299,6 +305,7 @@ fn main() {
             println!("Pre-opt R1cs size: {}", r1cs.constraints().len());
             let r1cs = reduce_linearities(r1cs, Some(lc_elimination_thresh));
             println!("Final R1cs size: {}", r1cs.constraints().len());
+            println!("{:#?}\n {:#?}", r1cs.constraints());
 
             match action {
                 ProofAction::Count => (),
@@ -351,6 +358,20 @@ fn main() {
 
                     println!("Proof verification successful!");
                     
+                }
+                ProofAction::Zkif => {
+                    let nothing = 0;
+                    /*
+                    // convert CirC R1CS -> zkinterface R1CS
+                    let (zki_header, zki_r1cs, zki_witness) = r1cs_to_zkif(r1cs);                    
+                    
+                    // convert zkinterface R1CS -> SIEVE IR
+
+                    // mem sink = stored in mem, file sink = stored in file
+                    let mut converter = FromR1CSConverter::new(MemorySink::default(), &zki_header); // TODO FilesSink
+                    converter.ingest_witness(&zki_witness)?;
+                    converter.ingest_constraints(&zki_r1cs)?;
+                    */
                 }
             }
         }

@@ -1,8 +1,8 @@
-#include <stdbool.h>
+#include <stdint.h>
 
-bool main(__attribute__((public(0))) bool a, __attribute__((public(0))) bool b) {
+int main(__attribute__((public(0))) int a, __attribute__((public(0))) int b) {
 
-  bool c = a && b;
-  return 1 || c;
+  int c = a + b;
+  return 2 * c;
 
 }

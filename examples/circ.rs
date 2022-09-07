@@ -43,7 +43,7 @@ use libspartan::{Instance, NIZKGens, NIZK};
 use merlin::Transcript;
 use circ::target::r1cs::spartan::r1cs_to_spartan;
 
-// use zki_sieve::{FromR1CSConverter, MemorySink, FilesSink};
+use zki_sieve::{producers::from_r1cs::FromR1CSConverter, FilesSink};
 // use zkinterface::{TODO}
 use circ::target::r1cs::zkif::{serialize, r1cs_to_zkif};
 // use rug::Integer;
@@ -364,15 +364,20 @@ fn main() {
 
                     // convert CirC R1CS -> zkinterface R1CS
                     let (zki_header, zki_r1cs, zki_witness) = r1cs_to_zkif(r1cs, &field);                    
-                    
-                    /* 
-                    // convert zkinterface R1CS -> SIEVE IR
 
-                    // mem sink = stored in mem, file sink = stored in file
-                    let mut converter = FromR1CSConverter::new(MemorySink::default(), &zki_header); // TODO FilesSink
-                    converter.ingest_witness(&zki_witness)?;
-                    converter.ingest_constraints(&zki_r1cs)?;
-                    */
+                    // convert zkinterface R1CS -> SIEVE IR
+                    let dir = PathBuf::from("/Users/jesskwoods/Repos/circ/test");
+                    let sink = FilesSink::new_clean(&dir).unwrap();
+                    let mut converter = FromR1CSConverter::new(sink, &zki_header);
+                    match converter.ingest_witness(&zki_witness) {
+                        Ok(()) => {},
+                        Err(e) => { panic!("Unable to ingest zkinterface witness: {}", e)}
+                    };
+                    match converter.ingest_constraints(&zki_r1cs) {
+                        Ok(()) => {},
+                        Err(e) => { panic!("Unable to ingest zkinterface constraints: {}", e)}
+                    }
+                    converter.finish();
                 }
             }
         }

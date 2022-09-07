@@ -45,7 +45,7 @@ use circ::target::r1cs::spartan::r1cs_to_spartan;
 
 // use zki_sieve::{FromR1CSConverter, MemorySink, FilesSink};
 // use zkinterface::{TODO}
-// use circ::target::r1cs::zkif::r1cs_to_zkif;
+use circ::target::r1cs::zkif::{serialize, r1cs_to_zkif};
 
 
 #[derive(Debug, StructOpt)]
@@ -294,18 +294,20 @@ fn main() {
         } => {
             println!("Converting to r1cs");
             let r1cs;
+            let field;
             match action {
                 ProofAction::Spartan => {
-                    r1cs = to_r1cs(cs, FieldT::from(circ::target::r1cs::spartan::SPARTAN_MODULUS.clone()));
+                    field = FieldT::from(circ::target::r1cs::spartan::SPARTAN_MODULUS.clone());
                 }
                 _ => {
-                    r1cs = to_r1cs(cs, FieldT::from(DFL_T.modulus()));
+                    modulus = FieldT::from(DFL_T.modulus());
                 }
+                r1cs = to_r1cs(cs, field);
             }
             println!("Pre-opt R1cs size: {}", r1cs.constraints().len());
             let r1cs = reduce_linearities(r1cs, Some(lc_elimination_thresh));
             println!("Final R1cs size: {}", r1cs.constraints().len());
-            println!("{:#?}\n {:#?}", r1cs.constraints());
+            //println!("{:#?}\n", r1cs.constraints());
 
             match action {
                 ProofAction::Count => (),
@@ -360,11 +362,18 @@ fn main() {
                     
                 }
                 ProofAction::Zkif => {
-                    let nothing = 0;
-                    /*
-                    // convert CirC R1CS -> zkinterface R1CS
-                    let (zki_header, zki_r1cs, zki_witness) = r1cs_to_zkif(r1cs);                    
+                    println!("zkif {:#?}\n{:#?}", field.modulus(), field.modulus() -1);
+                    let a: Integer = Integer::from(0xc);
+                    let b: Integer = Integer::from(0xa);
+                    let test: Vector<&Integer> = [&a, &b];
                     
+                    
+                    serialize(test, field);
+
+                    // convert CirC R1CS -> zkinterface R1CS
+                    //let (zki_header, zki_r1cs, zki_witness) = r1cs_to_zkif(r1cs);                    
+                    
+                    /* 
                     // convert zkinterface R1CS -> SIEVE IR
 
                     // mem sink = stored in mem, file sink = stored in file

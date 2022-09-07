@@ -281,6 +281,7 @@ dependencies = [
  "thiserror",
  "typed-arena",
  "zki_sieve",
+ "zkinterface",
  "zokrates_parser",
  "zokrates_pest_ast",
 ]

@@ -46,7 +46,7 @@ use circ::target::r1cs::spartan::r1cs_to_spartan;
 // use zki_sieve::{FromR1CSConverter, MemorySink, FilesSink};
 // use zkinterface::{TODO}
 use circ::target::r1cs::zkif::{serialize, r1cs_to_zkif};
-
+// use rug::Integer;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "circ", about = "CirC: the circuit compiler")]
@@ -293,17 +293,16 @@ fn main() {
             ..
         } => {
             println!("Converting to r1cs");
-            let r1cs;
             let field;
             match action {
                 ProofAction::Spartan => {
                     field = FieldT::from(circ::target::r1cs::spartan::SPARTAN_MODULUS.clone());
                 }
                 _ => {
-                    modulus = FieldT::from(DFL_T.modulus());
+                    field = FieldT::from(DFL_T.modulus());
                 }
-                r1cs = to_r1cs(cs, field);
             }
+            let r1cs = to_r1cs(cs, field.clone());
             println!("Pre-opt R1cs size: {}", r1cs.constraints().len());
             let r1cs = reduce_linearities(r1cs, Some(lc_elimination_thresh));
             println!("Final R1cs size: {}", r1cs.constraints().len());
@@ -362,16 +361,9 @@ fn main() {
                     
                 }
                 ProofAction::Zkif => {
-                    println!("zkif {:#?}\n{:#?}", field.modulus(), field.modulus() -1);
-                    let a: Integer = Integer::from(0xc);
-                    let b: Integer = Integer::from(0xa);
-                    let test: Vector<&Integer> = [&a, &b];
-                    
-                    
-                    serialize(test, field);
 
                     // convert CirC R1CS -> zkinterface R1CS
-                    //let (zki_header, zki_r1cs, zki_witness) = r1cs_to_zkif(r1cs);                    
+                    let (zki_header, zki_r1cs, zki_witness) = r1cs_to_zkif(r1cs, &field);                    
                     
                     /* 
                     // convert zkinterface R1CS -> SIEVE IR

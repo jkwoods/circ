@@ -22,12 +22,16 @@ pub fn r1cs_to_zkif<S: Eq + Hash + Clone + Display>(r1cs: R1cs<S>, field: &Field
                 if r1cs.public_idxs.contains(k) {
                     // input
                     println!("As public io: {}", name);
+                    println!("k = {}, k+1 = {}", k, k+1);
+                    println!("{:#?}",v.i());
                     pub_ids.push((k+1) as u64);
                     pub_vars.push(v.i());
                 
                 } else {
                     // witness
                     println!("As private witness: {}", name);
+                    println!("k = {}, k+1 = {}", k, k+1);
+                    println!("{:#?}", v.i());
                     priv_ids.push((k+1) as u64);
                     priv_vars.push(v.i()); 
                 }
@@ -51,6 +55,8 @@ pub fn r1cs_to_zkif<S: Eq + Hash + Clone + Display>(r1cs: R1cs<S>, field: &Field
         configuration: None, // optional
     };
 
+    println!("{:#?}", zkif_header);
+
     // witness
     let zkif_witness = Witness {
         assigned_variables: Variables { // private vars
@@ -58,6 +64,8 @@ pub fn r1cs_to_zkif<S: Eq + Hash + Clone + Display>(r1cs: R1cs<S>, field: &Field
             values: Some(serialize(&priv_vars, field)),
         }
     };
+
+    println!("{:#?}", zkif_witness);
 
     // put circuit together, witness = (1, private)
     let mut constraints_vec: Vec<BilinearConstraint> = Vec::new();
@@ -82,6 +90,8 @@ pub fn r1cs_to_zkif<S: Eq + Hash + Clone + Display>(r1cs: R1cs<S>, field: &Field
         constraints: constraints_vec,
     }; //ConstraintSystem::from(&constraints_vec);
 
+    println!("{:#?}", zkif_cs);
+
     return (zkif_header, zkif_cs, zkif_witness);
 
 }
@@ -103,15 +113,20 @@ fn lc_to_v(lc: &Lc, field: &FieldT) -> Variables {
         vars.push(m.i());
     }
 
+    let vals = serialize(&vars, field);
+    let opt = match vals.len() {
+        0 => None,
+        _ => Some(vals)
+    };
+
     return Variables{
         variable_ids: ids, 
-        values: Some(serialize(&vars, field)),
+        values: opt,
     };
 }
 
 // all big Integers become little endian vecs of u8, then are all concatenated together
-/// crap crap crap
-pub fn serialize(vals: &Vec<Integer>, f: &FieldT) -> Vec<u8> { // TODO make priv again
+fn serialize(vals: &Vec<Integer>, f: &FieldT) -> Vec<u8> {
 
     let mut lil: Vec<u8> = Vec::new();
     let elt_bits = (f.modulus().significant_bits() as f64 / 8.0).ceil() as usize;

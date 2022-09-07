@@ -45,7 +45,7 @@ use circ::target::r1cs::spartan::r1cs_to_spartan;
 
 use zki_sieve::{producers::from_r1cs::FromR1CSConverter, FilesSink};
 // use zkinterface::{TODO}
-use circ::target::r1cs::zkif::{serialize, r1cs_to_zkif};
+use circ::target::r1cs::zkif::r1cs_to_zkif;
 // use rug::Integer;
 
 #[derive(Debug, StructOpt)]
@@ -306,7 +306,7 @@ fn main() {
             println!("Pre-opt R1cs size: {}", r1cs.constraints().len());
             let r1cs = reduce_linearities(r1cs, Some(lc_elimination_thresh));
             println!("Final R1cs size: {}", r1cs.constraints().len());
-            //println!("{:#?}\n", r1cs.constraints());
+            println!("{:#?}\n", r1cs.constraints());
 
             match action {
                 ProofAction::Count => (),

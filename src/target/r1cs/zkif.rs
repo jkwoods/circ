@@ -8,10 +8,9 @@ use zkinterface::{Witness, Variables, ConstraintSystem, BilinearConstraint, Circ
 pub fn r1cs_to_zkif<S: Eq + Hash + Clone + Display>(r1cs: R1cs<S>, field: &FieldT) -> (CircuitHeader, ConstraintSystem, Witness)
 {
 
-    let mut pub_ids: Vec<u64> = Vec::new();
-    let mut pub_vars: Vec<Integer> = Vec::new();
-    let mut priv_ids: Vec<u64> = Vec::new();
-    let mut priv_vars: Vec<Integer> = Vec::new();
+
+    let mut inp: Vec<(u64, Integer)> = Vec::new();
+    let mut wit: Vec<(u64, Integer)> = Vec::new();
 
     match r1cs.values {
         Some(_) =>
@@ -24,16 +23,15 @@ pub fn r1cs_to_zkif<S: Eq + Hash + Clone + Display>(r1cs: R1cs<S>, field: &Field
                     println!("As public io: {}", name);
                     println!("k = {}, k+1 = {}", k, k+1);
                     println!("{:#?}",v.i());
-                    pub_ids.push((k+1) as u64);
-                    pub_vars.push(v.i());
-                
+
+                    inp.push(((k+1) as u64, v.i()));
                 } else {
                     // witness
                     println!("As private witness: {}", name);
                     println!("k = {}, k+1 = {}", k, k+1);
                     println!("{:#?}", v.i());
-                    priv_ids.push((k+1) as u64);
-                    priv_vars.push(v.i()); 
+                    
+                    wit.push(((k+1) as u64, v.i()));
                 }
 
             }
@@ -42,7 +40,15 @@ pub fn r1cs_to_zkif<S: Eq + Hash + Clone + Display>(r1cs: R1cs<S>, field: &Field
 
     // todo where do constants go??
 
-    assert_eq!(pub_vars.len() + priv_vars.len(), r1cs.next_idx);
+    assert_eq!(inp.len() + wit.len(), r1cs.next_idx);
+    inp.sort_by(|a,b| a.0.cmp(&b.0));
+    wit.sort_by(|a,b| a.0.cmp(&b.0));
+
+    let (pub_ids, pub_vars): (Vec<u64>, Vec<Integer>) = inp.into_iter().unzip();
+    let (priv_ids, priv_vars): (Vec<u64>, Vec<Integer>) = wit.into_iter().unzip();
+    
+    println!("{:#?}, {:#?}", pub_ids, pub_vars);
+    println!("{:#?}, {:#?}", priv_ids, priv_vars);
 
     // instance (public io)
     let zkif_header = CircuitHeader {

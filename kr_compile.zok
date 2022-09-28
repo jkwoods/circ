@@ -1,0 +1,31 @@
+
+
+def main(public u8[3] p, public u8[10] x, public u8[3] r) -> u8:
+
+  for field i in 0..3 do
+    r[i] = if p[i] == 0x2a then 0 else r[i] fi
+  endfor  
+
+  u8 fpr = 0 
+  for field i in 0..3 do
+     u8 temp = p[i]*r[i]
+     fpr = fpr + temp
+  endfor
+
+  u8[7] fp = [0, 0, 0, 0, 0, 0, 0]
+  
+  for field j in 0..7 do
+    for field i in 0..3 do
+      u8 temp = x[j+i]*r[i]
+      fp[j] = fp[j] + temp
+    endfor
+  endfor
+
+  u8 z = 1
+  for field i in 0..7 do
+    fp[i] = fp[i] - fpr
+    z = z * fp[i]
+  endfor  
+
+  return z
+

@@ -1,14 +1,14 @@
 
 
-def main(public u8[3] p, public u8[10] x, public u8[3] r) -> u8:
+def main(public u8[3] P, public u8[10] X, public u8[3] R) -> u8:
 
   for field i in 0..3 do
-    r[i] = if p[i] == 0x2a then 0 else r[i] fi
+    R[i] = if P[i] == 0x2a then 0 else R[i] fi
   endfor  
 
   u8 fpr = 0 
   for field i in 0..3 do
-     u8 temp = p[i]*r[i]
+     u8 temp = P[i]*R[i]
      fpr = fpr + temp
   endfor
 
@@ -16,7 +16,7 @@ def main(public u8[3] p, public u8[10] x, public u8[3] r) -> u8:
   
   for field j in 0..7 do
     for field i in 0..3 do
-      u8 temp = x[j+i]*r[i]
+      u8 temp = X[j+i]*R[i]
       fp[j] = fp[j] + temp
     endfor
   endfor

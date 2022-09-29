@@ -3,9 +3,10 @@ use crate::target::r1cs::*;
 use rug::{Integer, integer::Order};
 use core::clone::Clone;
 use zkinterface::{Witness, Variables, ConstraintSystem, BilinearConstraint, CircuitHeader};
+use crate::util::field::DFL_T;
 
 /// circ R1cs -> zkif
-pub fn r1cs_to_zkif<S: Eq + Hash + Clone + Display>(r1cs: R1cs<S>, field: &FieldT) -> (CircuitHeader, ConstraintSystem, Witness)
+pub fn r1cs_to_zkif<S: Eq + Hash + Clone + Display>(r1cs: R1cs<S>) -> (CircuitHeader, ConstraintSystem, Witness)
 {
 
 
@@ -49,6 +50,8 @@ pub fn r1cs_to_zkif<S: Eq + Hash + Clone + Display>(r1cs: R1cs<S>, field: &Field
     
     println!("{:#?}, {:#?}", pub_ids, pub_vars);
     println!("{:#?}, {:#?}", priv_ids, priv_vars);
+
+    let field = &FieldT::from(DFL_T.modulus().clone());
 
     // instance (public io)
     let zkif_header = CircuitHeader {

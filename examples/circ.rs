@@ -293,16 +293,7 @@ fn main() {
             ..
         } => {
             println!("Converting to r1cs");
-            let field;
-            match action {
-                ProofAction::Spartan => {
-                    field = FieldT::from(circ::target::r1cs::spartan::SPARTAN_MODULUS.clone());
-                }
-                _ => {
-                    field = FieldT::from(DFL_T.modulus());
-                }
-            }
-            let r1cs = to_r1cs(cs, field.clone());
+            let r1cs = to_r1cs(cs, FieldT::from(DFL_T.modulus()).clone());
             println!("Pre-opt R1cs size: {}", r1cs.constraints().len());
             let r1cs = reduce_linearities(r1cs, Some(lc_elimination_thresh));
             println!("Final R1cs size: {}", r1cs.constraints().len());
@@ -363,7 +354,7 @@ fn main() {
                 ProofAction::Zkif => {
 
                     // convert CirC R1CS -> zkinterface R1CS
-                    let (zki_header, zki_r1cs, zki_witness) = r1cs_to_zkif(r1cs, &field);                    
+                    let (zki_header, zki_r1cs, zki_witness) = r1cs_to_zkif(r1cs);                    
 
                     // convert zkinterface R1CS -> SIEVE IR
                     let dir = PathBuf::from("/Users/jesskwoods/Repos/circ/test");

@@ -7,15 +7,6 @@ use core::clone::Clone;
 
 use std::collections::HashMap;
 use gmp_mpfr_sys::gmp::limb_t;
-use lazy_static::lazy_static;
-
-lazy_static! {
-    /// Spartan modulus
-    pub static ref SPARTAN_MODULUS: Integer = Integer::from_str_radix(
-        "7237005577332262213973186563042994240857116359379907606001950938285454250989",
-         10
-    ).unwrap();
-}
 
 /// Hold Spartan variables
 #[derive(Debug)]

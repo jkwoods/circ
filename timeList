@@ -1,0 +1,477 @@
+
+5_10
+
+real	0m0.048s
+user	0m0.048s
+sys	0m0.001s
+Options { path: "tests/KR_5_10.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 50
+Final R1cs size: 49
+
+
+5_110
+
+real	0m0.315s
+user	0m0.303s
+sys	0m0.013s
+Options { path: "tests/KR_5_110.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 650
+Final R1cs size: 649
+
+
+5_210
+
+real	0m0.732s
+user	0m0.619s
+sys	0m0.113s
+Options { path: "tests/KR_5_210.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 1250
+Final R1cs size: 1249
+
+
+5_310
+
+real	0m1.267s
+user	0m1.098s
+sys	0m0.169s
+Options { path: "tests/KR_5_310.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 1850
+Final R1cs size: 1849
+
+
+5_410
+
+real	0m1.875s
+user	0m1.654s
+sys	0m0.221s
+Options { path: "tests/KR_5_410.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 2450
+Final R1cs size: 2449
+
+
+5_510
+
+real	0m3.131s
+user	0m2.795s
+sys	0m0.336s
+Options { path: "tests/KR_5_510.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 3050
+Final R1cs size: 3049
+
+
+5_610
+
+real	0m4.629s
+user	0m4.141s
+sys	0m0.488s
+Options { path: "tests/KR_5_610.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 3650
+Final R1cs size: 3649
+
+
+5_710
+
+real	0m6.283s
+user	0m5.759s
+sys	0m0.524s
+Options { path: "tests/KR_5_710.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 4250
+Final R1cs size: 4249
+
+
+5_810
+
+real	0m8.627s
+user	0m7.930s
+sys	0m0.697s
+Options { path: "tests/KR_5_810.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 4850
+Final R1cs size: 4849
+
+
+5_910
+
+real	0m10.502s
+user	0m9.577s
+sys	0m0.925s
+Options { path: "tests/KR_5_910.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 5450
+Final R1cs size: 5449
+
+
+10_10
+
+real	0m0.006s
+user	0m0.007s
+sys	0m0.000s
+Options { path: "tests/KR_10_10.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Error: Assignment type mismatch: field[0] annotated vs field[1] actual
+In: tests/KR_10_10.zok
+          field[0] fp = [0]
+
+
+10_110
+
+real	0m0.490s
+user	0m0.421s
+sys	0m0.068s
+Options { path: "tests/KR_10_110.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 1140
+Final R1cs size: 1139
+
+
+10_210
+
+real	0m1.286s
+user	0m1.157s
+sys	0m0.129s
+Options { path: "tests/KR_10_210.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 2240
+Final R1cs size: 2239
+
+
+10_310
+
+real	0m2.479s
+user	0m2.282s
+sys	0m0.197s
+Options { path: "tests/KR_10_310.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 3340
+Final R1cs size: 3339
+
+
+10_410
+
+real	0m4.193s
+user	0m3.872s
+sys	0m0.320s
+Options { path: "tests/KR_10_410.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 4440
+Final R1cs size: 4439
+
+
+10_510
+
+real	0m6.621s
+user	0m6.124s
+sys	0m0.496s
+Options { path: "tests/KR_10_510.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 5540
+Final R1cs size: 5539
+
+
+10_610
+
+real	0m9.528s
+user	0m8.856s
+sys	0m0.672s
+Options { path: "tests/KR_10_610.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 6640
+Final R1cs size: 6639
+
+
+10_710
+
+real	0m12.987s
+user	0m11.986s
+sys	0m1.000s
+Options { path: "tests/KR_10_710.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 7740
+Final R1cs size: 7739
+
+
+10_810
+
+real	0m17.047s
+user	0m15.810s
+sys	0m1.236s
+Options { path: "tests/KR_10_810.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 8840
+Final R1cs size: 8839
+
+
+10_910
+
+real	0m22.730s
+user	0m21.066s
+sys	0m1.664s
+Options { path: "tests/KR_10_910.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 9940
+Final R1cs size: 9939
+
+
+15_10
+
+real	0m0.007s
+user	0m0.006s
+sys	0m0.001s
+Options { path: "tests/KR_15_10.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Error: Assignment type mismatch: field[4294967291] annotated vs field[1] actual
+In: tests/KR_15_10.zok
+          field[-5] fp = [0]
+
+
+15_110
+
+real	0m0.678s
+user	0m0.610s
+sys	0m0.068s
+Options { path: "tests/KR_15_110.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 1580
+Final R1cs size: 1579
+
+
+15_210
+
+real	0m1.833s
+user	0m1.693s
+sys	0m0.141s
+Options { path: "tests/KR_15_210.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 3180
+Final R1cs size: 3179
+
+
+15_310
+
+real	0m3.985s
+user	0m3.744s
+sys	0m0.240s
+Options { path: "tests/KR_15_310.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 4780
+Final R1cs size: 4779
+
+
+15_410
+
+real	0m6.638s
+user	0m6.134s
+sys	0m0.504s
+Options { path: "tests/KR_15_410.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 6380
+Final R1cs size: 6379
+
+
+15_510
+
+real	0m10.578s
+user	0m9.913s
+sys	0m0.664s
+Options { path: "tests/KR_15_510.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 7980
+Final R1cs size: 7979
+
+
+15_610
+
+real	0m15.504s
+user	0m14.467s
+sys	0m1.037s
+Options { path: "tests/KR_15_610.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 9580
+Final R1cs size: 9579
+
+
+15_710
+
+real	0m21.128s
+user	0m19.823s
+sys	0m1.305s
+Options { path: "tests/KR_15_710.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 11180
+Final R1cs size: 11179
+
+
+15_810
+
+real	0m28.545s
+user	0m26.648s
+sys	0m1.896s
+Options { path: "tests/KR_15_810.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 12780
+Final R1cs size: 12779
+
+
+15_910
+
+real	0m38.171s
+user	0m35.918s
+sys	0m2.252s
+Options { path: "tests/KR_15_910.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 14380
+Final R1cs size: 14379
+
+
+20_10
+
+real	0m0.007s
+user	0m0.003s
+sys	0m0.004s
+Options { path: "tests/KR_20_10.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Error: Assignment type mismatch: field[4294967286] annotated vs field[1] actual
+In: tests/KR_20_10.zok
+          field[-10] fp = [0]
+
+
+20_110
+
+real	0m0.846s
+user	0m0.766s
+sys	0m0.080s
+Options { path: "tests/KR_20_110.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 1970
+Final R1cs size: 1969
+
+
+20_210
+
+real	0m2.594s
+user	0m2.454s
+sys	0m0.140s
+Options { path: "tests/KR_20_210.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 4070
+Final R1cs size: 4069
+
+
+20_310
+
+real	0m5.639s
+user	0m5.343s
+sys	0m0.297s
+Options { path: "tests/KR_20_310.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 6170
+Final R1cs size: 6169
+
+
+20_410
+
+real	0m9.962s
+user	0m9.366s
+sys	0m0.596s
+Options { path: "tests/KR_20_410.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 8270
+Final R1cs size: 8269
+
+
+20_510
+
+real	0m15.913s
+user	0m15.044s
+sys	0m0.869s
+Options { path: "tests/KR_20_510.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 10370
+Final R1cs size: 10369
+
+
+20_610
+
+real	0m22.478s
+user	0m21.241s
+sys	0m1.237s
+Options { path: "tests/KR_20_610.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 12470
+Final R1cs size: 12469
+
+
+20_710
+
+real	0m33.429s
+user	0m31.740s
+sys	0m1.689s
+Options { path: "tests/KR_20_710.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 14570
+Final R1cs size: 14569
+
+
+20_810
+
+real	0m42.441s
+user	0m40.145s
+sys	0m2.296s
+Options { path: "tests/KR_20_810.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 16670
+Final R1cs size: 16669
+
+
+20_910
+
+real	0m52.853s
+user	0m49.800s
+sys	0m3.052s
+Options { path: "tests/KR_20_910.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: None, rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Count, custom_mod: "" } }
+Done with IR optimization
+Converting to r1cs
+Pre-opt R1cs size: 18770
+Final R1cs size: 18769
+

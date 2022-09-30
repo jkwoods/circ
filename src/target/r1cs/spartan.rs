@@ -30,18 +30,18 @@ pub fn r1cs_to_spartan<S: Eq + Hash + Clone + Display>(r1cs: R1cs<S>) -> (Instan
         Some(_) =>
             for (k,v) in r1cs.values.as_ref().unwrap() { // CirC id, Integer
 
-                let name = r1cs.idxs_signals.get(k).unwrap().to_string();
+                //let name = r1cs.idxs_signals.get(k).unwrap().to_string();
                 let scalar = int_to_scalar(&v.i());
 
                 if r1cs.public_idxs.contains(k) {
                     // input
-                    println!("As public io: {}", name);
+                    //println!("As public io: {}", name);
 
                     itrans.insert(*k, inp.len());
                     inp.push(scalar.to_bytes());
                 } else {
                      // witness
-                    println!("As private witness: {}", name);
+                    //println!("As private witness: {}", name);
 
                     trans.insert(*k, wit.len());
                     wit.push(scalar.to_bytes());

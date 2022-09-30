@@ -199,6 +199,7 @@ fn main() {
         Backend::Smt { .. } => Mode::Proof,
     };
     let language = determine_language(&options.frontend.language, &options.path);
+
     let cs = match language {
         #[cfg(all(feature = "smt", feature = "zok"))]
         DeterminedLanguage::Zsharp => {
@@ -309,7 +310,7 @@ fn main() {
             println!("Pre-opt R1cs size: {}", r1cs.constraints().len());
             let r1cs = reduce_linearities(r1cs, Some(lc_elimination_thresh));
             println!("Final R1cs size: {}", r1cs.constraints().len());
-            // println!("{:#?}\n", r1cs.constraints());
+            //println!("{:#?}\n", r1cs.constraints());
 
             match action {
                 ProofAction::Count => (),

@@ -42,3 +42,4 @@ lazy_static! {
     /// Default field
     pub static ref DFL_T: FieldT = FieldT::from(RISTRETTO255_MOD.clone());
 }
+

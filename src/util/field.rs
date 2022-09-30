@@ -42,3 +42,4 @@ lazy_static! {
     /// Default field
     pub static ref DFL_T: FieldT = FieldT::from(CURVE25519_MOD.clone());
 }
+

@@ -44,9 +44,8 @@ use merlin::Transcript;
 use circ::target::r1cs::spartan::r1cs_to_spartan;
 
 use zki_sieve::{producers::from_r1cs::FromR1CSConverter, FilesSink};
-// use zkinterface::{TODO}
 use circ::target::r1cs::zkif::r1cs_to_zkif;
-// use rug::Integer;
+use rug::Integer;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "circ", about = "CirC: the circuit compiler")]
@@ -107,6 +106,8 @@ enum Backend {
         lc_elimination_thresh: usize,
         #[structopt(long, default_value = "count")]
         action: ProofAction,
+        #[structopt(long, default_value = "")]
+        custom_mod: String,
     },
     Smt {},
     Ilp {},
@@ -290,10 +291,21 @@ fn main() {
             verifier_key,
             instance,
             lc_elimination_thresh,
+            custom_mod,
             ..
         } => {
             println!("Converting to r1cs");
-            let r1cs = to_r1cs(cs, FieldT::from(DFL_T.modulus()).clone());
+            let field;
+            match custom_mod.as_str() {
+                "" => { field = FieldT::from(DFL_T.modulus()).clone(); }
+                _  => { field = FieldT::from(Integer::from_str_radix(&custom_mod,10).unwrap());
+                    if language != DeterminedLanguage::C {
+                        panic!("Modulus can only be changed at compile time if you are using C as a frontend. Otherwise, you are going to need to overhaul the compiler.");
+                    }
+                }
+            }
+            let r1cs = to_r1cs(cs, field);
+
             println!("Pre-opt R1cs size: {}", r1cs.constraints().len());
             let r1cs = reduce_linearities(r1cs, Some(lc_elimination_thresh));
             println!("Final R1cs size: {}", r1cs.constraints().len());

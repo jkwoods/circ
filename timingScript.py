@@ -3,8 +3,8 @@ import random
 def main():
   alphabet = [0,1,2,3,4,5,6,7,8,9,10,42]
 
-  for p in range (5,250,50):
-    for d in range (10,1000000,10000):
+  for p in range (5,25,5):
+    for d in range (10,1000,100):
       patternLen = p
       docLen = d
       rOffset = docLen - patternLen
@@ -25,7 +25,7 @@ def main():
            fpr = fpr + temp
         endfor
 
-        field[7] fp = {fp}
+        field[{rLen}] fp = {fp}
 
         for field j in 0..{rLen} do
           for field i in 0..{patternLen} do
@@ -57,10 +57,11 @@ def main():
       with open("timeTests.sh", 'a') as fw:
         fw.write("\necho -en \"\n"+str(patternLen)+"_"+str(docLen)+"\n\" >> timeList\n")
         fw.write("{ time ./target/release/examples/circ --inputs tests/"+filename+".zok.in tests/"+filename+".zok r1cs --action spartan > /dev/null ; } 2>> timeList")
+        fw.write("\n./target/release/examples/circ tests/"+filename+".zok r1cs --action count >> timeList\n")
+        fw.write("echo -en \"\n\" >> timeList\n")
   print("Done writing")
 
 
 if __name__ == "__main__":
     main()
-
 

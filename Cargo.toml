@@ -54,10 +54,10 @@ structopt = "0.3"
 approx = "0.5.0"
 
 [features]
-default = ["curve25519"] # jess add - change back if pushing to main
+default = ["ristretto255"] # jess add - change back if pushing to main
 bls12381 = []
 bn254 = []
-curve25519 = ["curve25519-dalek"]
+ristretto255 = ["curve25519-dalek"]
 ff_dfl = []
 c = ["lang-c"]
 lp = ["good_lp", "lp-solvers"]

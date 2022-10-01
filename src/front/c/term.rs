@@ -44,7 +44,7 @@ impl CTermData {
             CTermData::CArray(_, b) => {
                 // TODO: load all of the array
                 let i = b.unwrap_or_else(|| panic!("Unknown AllocID: {:#?}", self));
-                circ.load(i, bv_lit(0, 32))
+                circ.load(i, bv_lit(0, 64))
             }
         }
     }
@@ -118,21 +118,21 @@ pub fn cast(to_ty: Option<Ty>, t: CTerm) -> CTerm {
 /// Implementation of integer promotion (C11, 6.3.1.1.3)
 fn int_promotion(t: &CTerm) -> CTerm {
     let ty = t.term.type_();
-    if (ty.is_integer_type() || Ty::Bool == ty) && ty.int_conversion_rank() < 32 {
+    if (ty.is_integer_type() || Ty::Bool == ty) && ty.int_conversion_rank() < 64 {
         match &t.term {
             // "If an int can represent all values ... converted to an int ...
             // otherwise an unsigned int"
             CTermData::CInt(s, w, v) => {
                 let width = w - if *s { 1 } else { 0 };
-                let max_val: u32 = u32::pow(2, width as u32) - 1;
-                let signed = max_val < u32::pow(2u32, 31u32) - 1;
+                let max_val: u64 = u64::pow(2, width as u32) - 1;
+                let signed = max_val < u64::pow(2u64, 63u32) - 1;
                 CTerm {
-                    term: CTermData::CInt(signed, 32, v.clone()),
+                    term: CTermData::CInt(signed, 64, v.clone()),
                     udef: t.udef,
                 }
             }
             CTermData::CBool(v) => CTerm {
-                term: CTermData::CInt(false, 32, v.clone()),
+                term: CTermData::CInt(false, 64, v.clone()),
                 udef: t.udef,
             },
             _ => t.clone(),
@@ -503,7 +503,7 @@ impl Embeddable for Ct {
                     })
                     .collect();
                 let mut mem = ctx.mem.borrow_mut();
-                let id = mem.zero_allocate(n.unwrap(), 32, ty.num_bits());
+                let id = mem.zero_allocate(n.unwrap(), 64, ty.num_bits());
                 let arr = Self::T {
                     term: CTermData::CArray(*ty.clone(), Some(id)),
                     udef: false,
@@ -511,7 +511,7 @@ impl Embeddable for Ct {
                 for (i, t) in v.iter().enumerate() {
                     let val = t.term.terms()[0].clone();
                     let t_term = leaf_term(Op::Const(Value::Bool(true)));
-                    mem.store(id, bv_lit(i, 32), val, t_term);
+                    mem.store(id, bv_lit(i, 64), val, t_term);
                 }
                 arr
             }

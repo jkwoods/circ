@@ -178,11 +178,11 @@ impl CGen {
         }
     }
 
-    fn fold_(&mut self, expr: CTerm) -> i32 {
+    fn fold_(&mut self, expr: CTerm) -> i64 {
         let term_ = fold(&expr.term.term(&self.circ));
-        let cterm_ = cterm(CTermData::CInt(true, 32, term_));
+        let cterm_ = cterm(CTermData::CInt(true, 64, term_));
         let val = const_int(cterm_).ok().unwrap();
-        val.to_i32().unwrap()
+        val.to_i64().unwrap()
     }
 
     fn inner_derived_type_(&mut self, base_ty: Ty, d: DerivedDeclarator) -> Ty {
@@ -256,8 +256,8 @@ impl CGen {
             // TODO: move const integer function out to separate function
             Constant::Integer(i) => cterm(CTermData::CInt(
                 true,
-                32,
-                bv_lit(i.number.parse::<i32>().unwrap(), 32),
+                64,
+                bv_lit(i.number.parse::<i64>().unwrap(), 64),
             )),
             _ => unimplemented!("Constant {:#?} hasn't been implemented", c),
         }
@@ -287,14 +287,14 @@ impl CGen {
             _ => unimplemented!("BinaryOperator {:#?} hasn't been implemented", op),
         }
     }
-
+/*
     fn get_u_op(&self, op: UnaryOperator) -> fn(CTerm, CTerm) -> Result<CTerm, String> {
         match op {
             UnaryOperator::PostIncrement => add,
             _ => unimplemented!("UnaryOperator {:#?} hasn't been implemented", op),
         }
     }
-
+*/
     fn gen_expr(&mut self, expr: Expression) -> CTerm {
         let res = match expr.clone() {
             Expression::Identifier(node) => Ok(self
@@ -336,10 +336,10 @@ impl CGen {
                             || bin_op.operator.node == BinaryOperator::ShiftRight
                         {
                             let a_t = fold(&a.term.term(&self.circ));
-                            a = cterm(CTermData::CInt(true, 32, a_t));
+                            a = cterm(CTermData::CInt(true, 64, a_t));
 
                             let b_t = fold(&b.term.term(&self.circ));
-                            b = cterm(CTermData::CInt(true, 32, b_t));
+                            b = cterm(CTermData::CInt(true, 64, b_t));
                         }
                         f(a, b)
                     }
@@ -349,13 +349,21 @@ impl CGen {
                 let u_op = node.node;
                 match u_op.operator.node {
                     UnaryOperator::PostIncrement => {
-                        let f = self.get_u_op(u_op.operator.node);
+                        //let f = self.get_u_op(u_op.operator.node);
                         let i = self.gen_expr(u_op.operand.node.clone());
-                        let one = cterm(CTermData::CInt(true, 32, bv_lit(1, 32)));
-                        let e = f(i, one).unwrap();
+                        let one = cterm(CTermData::CInt(true, 64, bv_lit(1, 64)));
+                        let e = add(i, one).unwrap();
                         let lval = self.lval(*u_op.operand);
                         let mod_res = self.mod_lval(lval, e.clone());
                         self.unwrap(mod_res);
+                        Ok(e)
+                    }
+                    UnaryOperator::Minus => {
+                        let i = self.gen_expr(u_op.operand.node.clone());
+                        let zero = cterm(CTermData::CInt(true, 64, bv_lit(0, 64)));
+                        let one = cterm(CTermData::CInt(true, 64, bv_lit(1, 64)));
+                        let minusone = sub(zero, one).unwrap();
+                        let e = mul(i, minusone).unwrap();
                         Ok(e)
                     }
                     _ => unimplemented!("UnaryOperator {:#?} hasn't been implemented", u_op),
@@ -433,10 +441,10 @@ impl CGen {
                 }
                 let id = self
                     .circ
-                    .zero_allocate(values.len(), 32, inner_type.num_bits());
+                    .zero_allocate(values.len(), 64, inner_type.num_bits());
 
                 for (i, v) in values.iter().enumerate() {
-                    let offset = bv_lit(i, 32);
+                    let offset = bv_lit(i, 64);
                     let v_ = v.term.term(&self.circ);
                     self.circ.store(id, offset, v_);
                 }
@@ -457,7 +465,7 @@ impl CGen {
         } else {
             match derived_ty {
                 Ty::Array(size, ref ty) => {
-                    let id = self.circ.zero_allocate(size.unwrap(), 32, ty.num_bits());
+                    let id = self.circ.zero_allocate(size.unwrap(), 64, ty.num_bits());
                     cterm(CTermData::CArray(*ty.clone(), Some(id)))
                 }
                 _ => derived_ty.default(),

@@ -100,7 +100,7 @@ impl Ty {
         match self {
             Ty::Int(_, w) => *w,
             Ty::Bool => 1,
-            Ty::Array(_, _) => 32,
+            Ty::Array(_, _) => 32, // ?? change TODO
         }
     }
 

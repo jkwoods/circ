@@ -326,6 +326,7 @@ impl<S: Clone + Hash + Eq + Display> R1cs<S> {
         let av = self.eval(a).unwrap();
         let bv = self.eval(b).unwrap();
         let cv = self.eval(c).unwrap();
+
         if (av.clone() * &bv) != cv {
             panic!(
                 "Error! Bad constraint:\n    {} (value {})\n  * {} (value {})\n  = {} (value {})",
@@ -334,7 +335,7 @@ impl<S: Clone + Hash + Eq + Display> R1cs<S> {
                 self.format_lc(b),
                 bv,
                 self.format_lc(c),
-                cv
+                cv,
             )
         }
     }

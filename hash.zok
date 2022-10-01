@@ -1,8 +1,0 @@
-
-import "hashes/poseidon/poseidon" as poseidon
-
-def main(public field a) -> field:
-  field out = poseidon([a])  
-
-  return out
-

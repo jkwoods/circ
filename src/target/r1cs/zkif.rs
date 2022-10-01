@@ -17,20 +17,16 @@ pub fn r1cs_to_zkif<S: Eq + Hash + Clone + Display>(r1cs: R1cs<S>) -> (CircuitHe
         Some(_) =>
             for (k,v) in r1cs.values.as_ref().unwrap() { // CirC id, Integer
 
-                let name = r1cs.idxs_signals.get(k).unwrap().to_string();
+                //let name = r1cs.idxs_signals.get(k).unwrap().to_string();
 
                 if r1cs.public_idxs.contains(k) {
                     // input
-                    println!("As public io: {}", name);
-                    println!("k = {}, k+1 = {}", k, k+1);
-                    println!("{:#?}",v.i());
+                    //println!("As public io: {}", name);
 
                     inp.push(((k+1) as u64, v.i()));
                 } else {
                     // witness
-                    println!("As private witness: {}", name);
-                    println!("k = {}, k+1 = {}", k, k+1);
-                    println!("{:#?}", v.i());
+                    //println!("As private witness: {}", name);
                     
                     wit.push(((k+1) as u64, v.i()));
                 }
@@ -48,8 +44,8 @@ pub fn r1cs_to_zkif<S: Eq + Hash + Clone + Display>(r1cs: R1cs<S>) -> (CircuitHe
     let (pub_ids, pub_vars): (Vec<u64>, Vec<Integer>) = inp.into_iter().unzip();
     let (priv_ids, priv_vars): (Vec<u64>, Vec<Integer>) = wit.into_iter().unzip();
     
-    println!("{:#?}, {:#?}", pub_ids, pub_vars);
-    println!("{:#?}, {:#?}", priv_ids, priv_vars);
+    //println!("{:#?}, {:#?}", pub_ids, pub_vars);
+    //println!("{:#?}, {:#?}", priv_ids, priv_vars);
 
     let field = &FieldT::from(DFL_T.modulus().clone());
 
@@ -64,7 +60,7 @@ pub fn r1cs_to_zkif<S: Eq + Hash + Clone + Display>(r1cs: R1cs<S>) -> (CircuitHe
         configuration: None, // optional
     };
 
-    println!("{:#?}", zkif_header);
+    //println!("{:#?}", zkif_header);
 
     // witness
     let zkif_witness = Witness {
@@ -74,7 +70,7 @@ pub fn r1cs_to_zkif<S: Eq + Hash + Clone + Display>(r1cs: R1cs<S>) -> (CircuitHe
         }
     };
 
-    println!("{:#?}", zkif_witness);
+    //println!("{:#?}", zkif_witness);
 
     // put circuit together, witness = (1, private)
     let mut constraints_vec: Vec<BilinearConstraint> = Vec::new();
@@ -99,7 +95,7 @@ pub fn r1cs_to_zkif<S: Eq + Hash + Clone + Display>(r1cs: R1cs<S>) -> (CircuitHe
         constraints: constraints_vec,
     }; //ConstraintSystem::from(&constraints_vec);
 
-    println!("{:#?}", zkif_cs);
+    //println!("{:#?}", zkif_cs);
 
     return (zkif_header, zkif_cs, zkif_witness);
 

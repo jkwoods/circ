@@ -35,6 +35,7 @@ use good_lp::default_solver;
 use std::fs::File;
 use std::io::Read;
 use std::io::Write;
+use std::time::{Duration, Instant};
 use std::path::{Path, PathBuf};
 use structopt::clap::arg_enum;
 use structopt::StructOpt;
@@ -199,7 +200,7 @@ fn main() {
         Backend::Smt { .. } => Mode::Proof,
     };
     let language = determine_language(&options.frontend.language, &options.path);
-
+    let mut startC = Instant::now();
     let cs = match language {
         #[cfg(all(feature = "smt", feature = "zok"))]
         DeterminedLanguage::Zsharp => {
@@ -236,6 +237,9 @@ fn main() {
             panic!("Missing feature: c");
         }
     };
+    let mut durationC = startC.elapsed(); 
+    println!("Time to convert from C: {:?}", durationC); 
+    startC = Instant::now();
     let cs = match mode {
         Mode::Opt => opt(cs, vec![Opt::ScalarizeVars, Opt::ConstantFold]),
         Mode::Mpc(_) => opt(
@@ -281,7 +285,9 @@ fn main() {
             ],
         ),
     };
-    println!("Done with IR optimization");
+    durationC = startC.elapsed();
+    println!("Time for IR opt: {:?}", durationC);
+    //println!("Done with IR optimization");
 
     match options.backend {
         #[cfg(feature = "r1cs")]
@@ -305,11 +311,18 @@ fn main() {
                     }
                 }
             }
-            let r1cs = to_r1cs(cs, field);
+            let mut start = Instant::now();
+	    let r1cs = to_r1cs(cs, field);
+            let mut duration = start.elapsed(); 
+            println!("Time to_r1cs: {:?}", duration); 
 
+              
             println!("Pre-opt R1cs size: {}", r1cs.constraints().len());
+            start = Instant::now();
             let r1cs = reduce_linearities(r1cs, Some(lc_elimination_thresh));
-            println!("Final R1cs size: {}", r1cs.constraints().len());
+            duration = start.elapsed(); 
+   	    println!("Time for R1CS opt: {:?}", duration);
+	    println!("Final R1cs size: {}", r1cs.constraints().len());
             //println!("{:#?}\n", r1cs.constraints());
 
             match action {
@@ -344,24 +357,32 @@ fn main() {
                     verify_proof(&pvk, &pf, &instance_vec).unwrap();
                 }
                 ProofAction::Spartan => {
-                    println!("Converting R1CS to Spartan");
-                    let (inst, vars, inps, num_cons, num_vars, num_inputs) = r1cs_to_spartan(r1cs);
-
-                    println!("Proving with Spartan");
+                    //println!("Converting R1CS to Spartan");
+                    let mut start = Instant::now();
+		    let (inst, vars, inps, num_cons, num_vars, num_inputs) = r1cs_to_spartan(r1cs);
+		    let mut duration = start.elapsed();
+		    println!("Time for conversion from R1CS to Spartan: {:?}",duration);	
+                    
+		    //println!("Proving with Spartan");
                     // produce public parameters
-                    let gens = NIZKGens::new(num_cons, num_vars, num_inputs);
+                    start = Instant::now();
+		    let gens = NIZKGens::new(num_cons, num_vars, num_inputs);
                     // produce proof
                     let mut prover_transcript = Transcript::new(b"nizk_example");
                     let pf = NIZK::prove(&inst, vars, &inps, &gens, &mut prover_transcript);            
-    
-                    println!("Verifying with Spartan");
+    		    duration = start.elapsed(); 
+                    println!("Time for proving: {:?}", duration);	
+                    
+		    //println!("Verifying with Spartan");
                     // verify proof
+		    start = Instant::now();
                     let mut verifier_transcript = Transcript::new(b"nizk_example");
                     assert!(pf
                         .verify(&inst, &inps, &mut verifier_transcript, &gens)
                         .is_ok());
-
-                    println!("Proof verification successful!");
+  		    duration = start.elapsed();
+		    println!("Time for verifying: {:?}",duration);	
+                    //println!("Proof verification successful!");
                     
                 }
                 ProofAction::Zkif => {

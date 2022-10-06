@@ -1,9 +1,11 @@
 import random
-
+import sys
 def main():
   alphabet = [0,1,2,3,4,5,6,7,8,9,10,42]
+  genTests = len(sys.argv) > 1
 
-  for p in range (5,1000,100):
+  
+  for p in range (100,10000,900):
     for d in range (10000,1000000,100000):
       patternLen = p
       docLen = d
@@ -43,22 +45,22 @@ def main():
         return z""".format(patternLen=patternLen,docLen=docLen,rLen = rOffset, fp = fpString)
 
       filename = "KR_"+str(patternLen)+"_"+str(docLen)
-      with open("tests/"+filename+".zok", 'w') as f:
-        f.write(fieldScript)
+      if genTests:
+        with open("tests/"+filename+".zok", 'w') as f:
+          f.write(fieldScript)
         
-      with open("tests/"+filename+".zok.in",'w') as f:
-        for i in range(patternLen): 
-          f.write("P."+str(i)+" "+str(random.choice(alphabet))+"\n")
-        for i in range(docLen): 
-          f.write("X."+str(i)+" "+str(random.choice(alphabet[:-1]))+"\n")
-        for i in range(patternLen): 
-          f.write("R."+str(i)+" "+str(random.choice(alphabet[:-1]))+"\n")
+        with open("tests/"+filename+".zok.in",'w') as f:
+          for i in range(patternLen): 
+            f.write("P."+str(i)+" "+str(random.choice(alphabet))+"\n")
+          for i in range(docLen): 
+            f.write("X."+str(i)+" "+str(random.choice(alphabet[:-1]))+"\n")
+          for i in range(patternLen): 
+            f.write("R."+str(i)+" "+str(random.choice(alphabet[:-1]))+"\n")
           
       with open("timeTests.sh", 'a') as fw:
         fw.write("\necho -en \"\n"+str(patternLen)+"_"+str(docLen)+"\n\" >> timeList\n")
-        fw.write("{ time ./target/release/examples/circ --inputs tests/"+filename+".zok.in tests/"+filename+".zok r1cs --action spartan > /dev/null ; } 2>> timeList")
-        fw.write("\n./target/release/examples/circ tests/"+filename+".zok r1cs --action count >> timeList\n")
-        fw.write("echo -en \"\n\" >> timeList\n")
+        fw.write("./target/release/examples/circ --inputs tests/"+filename+".zok.in tests/"+filename+".zok r1cs --action spartan >> timeList")
+        fw.write("\n echo -en \"\n\" >> timeList\n")
   print("Done writing")
 
 

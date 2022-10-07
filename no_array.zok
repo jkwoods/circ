@@ -1,0 +1,6 @@
+def main(private field X0,private field X1,private field X2,private field X3,private field X4) -> field:
+	X1 = X1*X0
+	X2 = X2*X1
+	X3 = X3*X2
+	X4 = X4*X3
+	return X4

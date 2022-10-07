@@ -1,0 +1,1 @@
+Options { path: "tests/KR_100_10000.zok", frontend: FrontendOptions { language: Auto, value_threshold: None, inputs: Some("tests/KR_100_10000.zok.in"), rec_limit: 5, lint_prim_rec: false }, parties: 2, backend: R1cs { prover_key: "P", verifier_key: "V", proof: "pi", instance: "x", lc_elimination_thresh: 50, action: Spartan, custom_mod: "" } }

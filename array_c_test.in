@@ -1,0 +1,8 @@
+
+  #include <stdint.h>
+  int main(__attribute__((private(0))) in X0,__attribute__((private(0))) in X1,__attribute__((private(0))) in X2,__attribute__((private(0))) in X3,__attribute__((private(0))) in X4) {
+	X1 = X1*X0;
+	X2 = X2*X1;
+	X3 = X3*X2;
+	X4 = X4*X3;
+return X4;}

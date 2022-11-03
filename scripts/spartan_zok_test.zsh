@@ -4,9 +4,6 @@ set -ex
 
 disable -r time
 
-# cargo build --release --features r1cs,smt,zok --example circ
-# cargo build --example circ
-
 MODE=release # debug or release
 BIN=./target/$MODE/examples/circ
 ZK_BIN=./target/$MODE/examples/zk
@@ -34,20 +31,27 @@ function r1cs_test_count {
 }
 
 # Test prove workflow, given an example name
+# examples that don't need modulus change
 function pf_test {
     ex_name=$1
-    $BIN examples/ZoKrates/pf/$ex_name.zok r1cs --action setup
-    $ZK_BIN --inputs examples/ZoKrates/pf/$ex_name.zok.pin --action prove
-    $ZK_BIN --inputs examples/ZoKrates/pf/$ex_name.zok.vin --action verify
+    $BIN examples/ZoKrates/pf/$ex_name.zok r1cs --action spartansetup
+    $ZK_BIN --pin examples/ZoKrates/pf/$ex_name.zok.pin --vin examples/ZoKrates/pf/$ex_name.zok.vin --action spartan
     rm -rf P V pi
 }
 
 # Test prove workflow with --z-isolate-asserts, given an example name
-function pf_test_isolate {
+function spartan_test_isolate {
     ex_name=$1
-    $BIN --z-isolate-asserts examples/ZoKrates/pf/$ex_name.zok r1cs --action setup
-    $ZK_BIN --inputs examples/ZoKrates/pf/$ex_name.zok.pin --action prove
-    $ZK_BIN --inputs examples/ZoKrates/pf/$ex_name.zok.vin --action verify
+    $BIN --z-isolate-asserts examples/ZoKrates/spartan/$ex_name.zok r1cs --action spartansetup
+    $ZK_BIN --pin examples/ZoKrates/spartan/$ex_name.zok.pin --vin examples/ZoKrates/spartan/$ex_name.zok.vin --action spartan
+    rm -rf P V pi
+}
+
+# Test prove workflow, given an example name
+function spartan_test {
+    ex_name=$1
+    $BIN examples/ZoKrates/spartan/$ex_name.zok r1cs --action spartansetup
+    $ZK_BIN --pin examples/ZoKrates/spartan/$ex_name.zok.pin --vin examples/ZoKrates/spartan/$ex_name.zok.vin --action spartan
     rm -rf P V pi
 }
 
@@ -66,16 +70,15 @@ r1cs_test ./third_party/ZoKrates/zokrates_stdlib/stdlib/ecc/edwardsScalarMult.zo
 r1cs_test ./third_party/ZoKrates/zokrates_stdlib/stdlib/hashes/mimc7/mimc7R20.zok
 r1cs_test ./third_party/ZoKrates/zokrates_stdlib/stdlib/hashes/pedersen/512bit.zok
 
-pf_test assert
-pf_test_isolate isolate_assert
+spartan_test assert
+spartan_test_isolate isolate_assert
 pf_test 3_plus
 pf_test xor
-pf_test mul
+spartan_test mul
 pf_test many_pub
-pf_test str_str
-pf_test str_arr_str
-pf_test arr_str_arr_str
-pf_test var_idx_arr_str_arr_str
-pf_test mm
+spartan_test str_str
+spartan_test str_arr_str
+spartan_test arr_str_arr_str
+spartan_test var_idx_arr_str_arr_str
+spartan_test mm
 
-scripts/zx_tests/run_tests.sh

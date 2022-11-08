@@ -40,6 +40,7 @@ use circ_fields::FieldT;
 use fxhash::FxHashMap as HashMap;
 #[cfg(feature = "lp")]
 use good_lp::default_solver;
+use rug::Integer;
 use std::fs::File;
 use std::io::Read;
 use std::io::Write;
@@ -106,6 +107,8 @@ enum Backend {
         lc_elimination_thresh: usize,
         #[structopt(long, default_value = "count")]
         action: ProofAction,
+        #[structopt(long, default_value = "")]
+        custom_mod: String,
     },
     Smt {},
     Ilp {},
@@ -286,11 +289,23 @@ fn main() {
             prover_key,
             verifier_key,
             lc_elimination_thresh,
+            custom_mod,
             ..
         } => {
             println!("Converting to r1cs");
-            let (r1cs, mut prover_data, verifier_data) =
-                to_r1cs(cs.get("main").clone(), FieldT::from(DFL_T.modulus()));
+            let field;
+            match custom_mod.as_str() {
+                "" => {
+                    field = FieldT::from(DFL_T.modulus()).clone();
+                }
+                _ => {
+                    field = FieldT::from(Integer::from_str_radix(&custom_mod, 10).unwrap());
+                    if language != DeterminedLanguage::C {
+                        panic!("Modulus can only be changed at compile time if you are using C as a frontend. Otherwise, you are going to need to overhaul the compiler.");
+                    }
+                }
+            }
+            let (r1cs, mut prover_data, verifier_data) = to_r1cs(cs.get("main").clone(), field);
 
             println!("Pre-opt R1cs size: {}", r1cs.constraints().len());
             let r1cs = reduce_linearities(r1cs, Some(lc_elimination_thresh));

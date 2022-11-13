@@ -33,6 +33,7 @@ use circ::target::r1cs::opt::reduce_linearities;
 #[cfg(feature = "r1cs")]
 use circ::target::r1cs::spartan::write_data;
 use circ::target::r1cs::trans::to_r1cs;
+use circ::target::r1cs::zkif::r1cs_to_zkif;
 #[cfg(feature = "smt")]
 use circ::target::smt::find_model;
 use circ::util::field::DFL_T;
@@ -47,6 +48,7 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use structopt::clap::arg_enum;
 use structopt::StructOpt;
+use zki_sieve::{producers::from_r1cs::FromR1CSConverter, FilesSink};
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "circ", about = "CirC: the circuit compiler")]
@@ -107,6 +109,8 @@ enum Backend {
         lc_elimination_thresh: usize,
         #[structopt(long, default_value = "count")]
         action: ProofAction,
+        #[structopt(long, default_value = "in", parse(from_os_str))]
+        inputs: PathBuf,
         #[structopt(long, default_value = "")]
         custom_mod: String,
     },
@@ -149,6 +153,7 @@ arg_enum! {
         Count,
         Setup,
         SpartanSetup,
+        Sieve,
     }
 }
 
@@ -289,6 +294,7 @@ fn main() {
             prover_key,
             verifier_key,
             lc_elimination_thresh,
+            inputs,
             custom_mod,
             ..
         } => {
@@ -305,7 +311,8 @@ fn main() {
                     }
                 }
             }
-            let (r1cs, mut prover_data, verifier_data) = to_r1cs(cs.get("main").clone(), field);
+            let (r1cs, mut prover_data, verifier_data) =
+                to_r1cs(cs.get("main").clone(), field.clone());
 
             println!("Pre-opt R1cs size: {}", r1cs.constraints().len());
             let r1cs = reduce_linearities(r1cs, Some(lc_elimination_thresh));
@@ -328,6 +335,33 @@ fn main() {
                 ProofAction::SpartanSetup => {
                     write_data::<_, _>(prover_key, verifier_key, &prover_data, &verifier_data)
                         .unwrap();
+                }
+                ProofAction::Sieve => {
+                    let input_map = parse_value_map(&std::fs::read(inputs).unwrap());
+
+                    // convert CirC R1CS -> zkinterface R1CS
+                    let (zki_header, zki_r1cs, zki_witness) =
+                        r1cs_to_zkif(&prover_data, &input_map, &field);
+
+                    // convert zkinterface R1CS -> SIEVE IR
+                    let dir = PathBuf::from("/Users/jesskwoods/Repos/circ/test");
+                    let sink = FilesSink::new_clean(&dir).unwrap();
+                    let mut converter = FromR1CSConverter::new(sink, &zki_header);
+                    match converter.ingest_witness(&zki_witness) {
+                        Ok(()) => {}
+                        Err(e) => {
+                            panic!("Unable to ingest zkinterface witness: {}", e)
+                        }
+                    };
+                    match converter.ingest_constraints(&zki_r1cs) {
+                        Ok(()) => {}
+                        Err(e) => {
+                            panic!("Unable to ingest zkinterface constraints: {}", e)
+                        }
+                    }
+                    converter.finish();
+
+                    // todo write?
                 }
             }
         }

@@ -83,7 +83,7 @@ impl Ty {
             Self::Bool => Sort::Bool,
             Self::Int(_s, w) => Sort::BitVector(*w),
             Self::Array(n, _, b) => {
-                Sort::Array(Box::new(Sort::BitVector(32)), Box::new(b.sort()), *n)
+                Sort::Array(Box::new(Sort::BitVector(64)), Box::new(b.sort()), *n)
             }
             Self::Struct(_name, fs) => {
                 Sort::Tuple(fs.fields().map(|(_f_name, f_ty)| f_ty.sort()).collect())
@@ -111,7 +111,7 @@ impl Ty {
             },
             Self::Array(s, _, ty) => {
                 let mut mem = ctx.mem.borrow_mut();
-                let id = mem.zero_allocate(*s, 32, ty.num_bits());
+                let id = mem.zero_allocate(*s, 64, ty.num_bits());
                 CTerm {
                     term: CTermData::CArray(self.clone(), Some(id)),
                     udef: false,
@@ -119,7 +119,7 @@ impl Ty {
             }
             Self::Ptr(s, ty) => {
                 let mut mem = ctx.mem.borrow_mut();
-                let id = mem.zero_allocate(*s, 32, ty.num_bits());
+                let id = mem.zero_allocate(*s, 64, ty.num_bits());
                 CTerm {
                     term: CTermData::CStackPtr(*ty.clone(), bv_lit(0, *s), Some(id)),
                     udef: false,

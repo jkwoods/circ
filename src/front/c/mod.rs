@@ -169,9 +169,9 @@ impl CGen {
     fn type_(&mut self, t: &TypeSpecifier) -> Option<Ty> {
         return match t {
             TypeSpecifier::Void => None,
-            TypeSpecifier::Int => Some(Ty::Int(true, 32)),
-            TypeSpecifier::Unsigned => Some(Ty::Int(false, 32)),
-            TypeSpecifier::Long => Some(Ty::Int(true, 32)), // TODO: not 32 bits
+            TypeSpecifier::Int => Some(Ty::Int(true, 64)),
+            TypeSpecifier::Unsigned => Some(Ty::Int(false, 64)),
+            TypeSpecifier::Long => Some(Ty::Int(true, 64)), // TODO: not 32 bits
             TypeSpecifier::Bool => Some(Ty::Bool),
             TypeSpecifier::TypedefName(td) => {
                 let name = &td.node.name;
@@ -256,8 +256,8 @@ impl CGen {
             }
             DerivedDeclarator::Pointer(_) => {
                 // let num_bits = base_ty.num_bits();
-                // TODO: assume 32 bit ptrs for now.
-                Ty::Ptr(32, Box::new(base_ty.clone()))
+                // TODO: assume 64 bit ptrs for now.
+                Ty::Ptr(64, Box::new(base_ty.clone()))
             }
             _ => panic!("Not implemented: {:#?}", d),
         }
@@ -423,7 +423,7 @@ impl CGen {
                 let i = id.unwrap_or_else(|| panic!("Unknown AllocID: {:#?}", array.clone()));
                 let vals = val.term.terms(self.circ.borrow().cir_ctx());
                 for (o, v) in vals.iter().enumerate() {
-                    let updated_idx = term![BV_ADD; idx_term.clone(), bv_lit(o as i32, 32)];
+                    let updated_idx = term![BV_ADD; idx_term.clone(), bv_lit(o as i64, 64)];
                     self.circ_store(i, updated_idx, v.clone());
                 }
                 if vals.len() > 1 {
@@ -437,7 +437,7 @@ impl CGen {
                 let vals = val.term.terms(self.circ.borrow().cir_ctx());
                 for (o, v) in vals.iter().enumerate() {
                     let updated_idx =
-                        term![BV_ADD; idx_term.clone(), offset.clone(), bv_lit(o as i32, 32)];
+                        term![BV_ADD; idx_term.clone(), offset.clone(), bv_lit(o as i64, 64)];
                     self.circ_store(i, updated_idx, v.clone());
                 }
                 if vals.len() > 1 {
@@ -494,7 +494,7 @@ impl CGen {
                         // get offset
                         let index = self.gen_index(expr);
                         let offset = self.index_offset(&index);
-                        let idx = cterm(CTermData::CInt(true, 32, offset));
+                        let idx = cterm(CTermData::CInt(true, 64, offset));
 
                         if let Expression::BinaryOperator(_) = bin_op.lhs.node {
                             // Matrix case
@@ -584,11 +584,11 @@ impl CGen {
         }
     }
 
-    fn fold_(&mut self, expr: &CTerm) -> i32 {
+    fn fold_(&mut self, expr: &CTerm) -> i64 {
         let term_ = fold(&expr.term.term(self.circ.borrow().cir_ctx()), &[]);
-        let cterm_ = cterm(CTermData::CInt(true, 32, term_));
+        let cterm_ = cterm(CTermData::CInt(true, 64, term_));
         let val = const_int(cterm_);
-        val.to_i32().unwrap()
+        val.to_i64().unwrap()
     }
 
     fn const_(&self, c: &Constant) -> CTerm {
@@ -599,13 +599,13 @@ impl CGen {
                 let _imaginary = i.suffix.imaginary;
                 match (i.suffix.size, signed) {
                     (IntegerSize::Int, true) => {
-                        let size = 32;
-                        let num = i.number.parse::<i32>().unwrap();
+                        let size = 64;
+                        let num = i.number.parse::<i64>().unwrap();
                         cterm(CTermData::CInt(signed, size, bv_lit(num, size)))
                     }
                     (IntegerSize::Int, false) => {
-                        let size = 32;
-                        let num = i.number.parse::<u32>().unwrap();
+                        let size = 64;
+                        let num = i.number.parse::<u64>().unwrap();
                         cterm(CTermData::CInt(signed, size, bv_lit(num, size)))
                     }
                     (IntegerSize::Long, true) => {
@@ -685,16 +685,16 @@ impl CGen {
 
     fn index_offset(&mut self, index: &IndexTerm) -> Term {
         let base_ty = index.base.term.type_();
-        let mut offset: Term = bv_lit(0, 32);
+        let mut offset: Term = bv_lit(0, 64);
         if let Ty::Array(_, sizes, _) = base_ty {
             let mut total = 1;
             for (i, ind) in index.indices.iter().rev().enumerate() {
                 let index_term = ind.term.term(self.circ.borrow().cir_ctx());
-                let size = sizes[i] as i32;
+                let size = sizes[i] as i64;
                 if i == 0 {
                     offset = term![BV_ADD; index_term, offset];
                 } else {
-                    offset = term![BV_ADD; term![BV_MUL; bv_lit(total, 32), index_term], offset];
+                    offset = term![BV_ADD; term![BV_MUL; bv_lit(total, 64), index_term], offset];
                 }
                 total *= size;
             }
@@ -746,19 +746,19 @@ impl CGen {
                                     } else {
                                         self.array_select(
                                             &index.base,
-                                            &cterm(CTermData::CInt(true, 32, offset)),
+                                            &cterm(CTermData::CInt(true, 64, offset)),
                                         )
                                     }
                                 } else {
                                     self.array_select(
                                         &index.base,
-                                        &cterm(CTermData::CInt(true, 32, offset)),
+                                        &cterm(CTermData::CInt(true, 64, offset)),
                                     )
                                 }
                             }
                             _ => self.array_select(
                                 &index.base,
-                                &cterm(CTermData::CInt(true, 32, offset)),
+                                &cterm(CTermData::CInt(true, 64, offset)),
                             ),
                         }
                     }
@@ -771,7 +771,7 @@ impl CGen {
                         match bin_op.operator.node {
                             BinaryOperator::ShiftLeft | BinaryOperator::ShiftRight => {
                                 let b_t = fold(&b.term.term(self.circ.borrow().cir_ctx()), &[]);
-                                b = cterm(CTermData::CInt(true, 32, b_t));
+                                b = cterm(CTermData::CInt(true, 64, b_t));
                                 f(a, b)
                             }
                             _ => f(a, b),
@@ -785,7 +785,7 @@ impl CGen {
                     UnaryOperator::PostIncrement | UnaryOperator::PostDecrement => {
                         let f = self.get_u_op(&u_op.operator.node);
                         let i = self.gen_expr(&u_op.operand.node);
-                        let one = cterm(CTermData::CInt(true, 32, bv_lit(1, 32)));
+                        let one = cterm(CTermData::CInt(true, 64, bv_lit(1, 64)));
                         let loc = self.gen_lval(&u_op.operand.node);
                         let val = f(i, one).unwrap();
                         self.gen_assign(loc, val)
@@ -802,8 +802,9 @@ impl CGen {
                             _ => unimplemented!("Unimplemented Sizeof: {:#?}", u_op.operand.node),
                         };
                         let _size = ty.num_bits();
-                        Ok(cterm(CTermData::CInt(true, 32, bv_lit(1, 32))))
+                        Ok(cterm(CTermData::CInt(true, 64, bv_lit(1, 64))))
                     }
+                    // minus TODO??
                     _ => unimplemented!("UnaryOperator {:#?} hasn't been implemented", u_op),
                 }
             }
@@ -903,7 +904,7 @@ impl CGen {
                 match ty {
                     Some(t) => {
                         let _size = t.num_bits();
-                        Ok(cterm(CTermData::CInt(true, 32, bv_lit(1, 32))))
+                        Ok(cterm(CTermData::CInt(true, 64, bv_lit(1, 64))))
                     }
                     None => {
                         panic!("Cannot determine size of type: {:#?}", s);
@@ -928,10 +929,10 @@ impl CGen {
                         values.push(expr);
                     }
                     assert!(n == values.len());
-                    let id = self.circ_zero_allocate(values.len(), 32, inner_type.num_bits());
+                    let id = self.circ_zero_allocate(values.len(), 64, inner_type.num_bits());
 
                     for (i, v) in values.iter().enumerate() {
-                        let offset = bv_lit(i, 32);
+                        let offset = bv_lit(i, 64);
                         let v_ = v.term.term(self.circ.borrow().cir_ctx());
                         self.circ_store(id, offset, v_);
                     }
@@ -1051,7 +1052,7 @@ impl CGen {
         let incr: f32 = incr_.val as f32;
 
         ConstIteration {
-            val: ((end - start) / incr).ceil() as i32,
+            val: ((end - start) / incr).ceil() as i64,
         }
     }
 

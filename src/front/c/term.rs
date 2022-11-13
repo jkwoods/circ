@@ -38,7 +38,7 @@ impl CTermData {
                     let alloc_id = a.unwrap_or_else(|| panic!("Unknown AllocID: {:#?}", a));
                     if let Ty::Array(l, _, _) = t {
                         for i in 0..*l {
-                            let offset = bv_lit(i, 32);
+                            let offset = bv_lit(i, 64);
                             let idx_term = inner_ctx.mem.borrow_mut().load(alloc_id, offset);
                             output.push(idx_term);
                         }
@@ -48,7 +48,7 @@ impl CTermData {
                     let alloc_id = a.unwrap_or_else(|| panic!("Unknown AllocID: {:#?}", a));
                     if let Ty::Array(l, _, _) = t {
                         for i in 0..*l {
-                            let offset = bv_lit(i, 32);
+                            let offset = bv_lit(i, 64);
                             let idx_term = inner_ctx.mem.borrow_mut().load(alloc_id, offset);
                             output.push(idx_term);
                         }
@@ -198,7 +198,7 @@ pub fn cast(to_ty: Option<Ty>, t: CTerm) -> CTerm {
         },
         CTermData::CArray(ref ty, id) => match to_ty {
             Some(Ty::Ptr(_, _)) => {
-                let offset = bv_lit(0, 32);
+                let offset = bv_lit(0, 64);
                 CTerm {
                     term: CTermData::CStackPtr(ty.clone(), offset, id),
                     udef: t.udef,
@@ -225,21 +225,21 @@ pub fn cast(to_ty: Option<Ty>, t: CTerm) -> CTerm {
 /// Implementation of integer promotion (C11, 6.3.1.1.3)
 fn int_promotion(t: &CTerm) -> CTerm {
     let ty = t.term.type_();
-    if (ty.is_integer_type() || Ty::Bool == ty) && ty.int_conversion_rank() < 32 {
+    if (ty.is_integer_type() || Ty::Bool == ty) && ty.int_conversion_rank() < 64 {
         match &t.term {
             // "If an int can represent all values ... converted to an int ...
             // otherwise an unsigned int"
             CTermData::CInt(s, w, v) => {
                 let width = w - *s as usize;
-                let max_val: u32 = u32::pow(2, width as u32) - 1;
-                let signed = max_val < u32::pow(2u32, 31u32) - 1;
+                let max_val: u64 = u64::pow(2, width as u32) - 1;
+                let signed = max_val < u64::pow(2u64, 63u32) - 1;
                 CTerm {
-                    term: CTermData::CInt(signed, 32, v.clone()),
+                    term: CTermData::CInt(signed, 64, v.clone()),
                     udef: t.udef,
                 }
             }
             CTermData::CBool(v) => CTerm {
-                term: CTermData::CInt(false, 32, v.clone()),
+                term: CTermData::CInt(false, 64, v.clone()),
                 udef: t.udef,
             },
             _ => t.clone(),
@@ -324,7 +324,7 @@ fn wrap_bin_arith(
             udef: false,
         }),
         (CTermData::CArray(ty, aid), CTermData::CInt(_, _, y), Some(fu), _) => Ok(CTerm {
-            term: CTermData::CStackPtr(ty, fu(bv_lit(0, 32), y), aid),
+            term: CTermData::CStackPtr(ty, fu(bv_lit(0, 64), y), aid),
             udef: false,
         }),
         (CTermData::CStackPtr(ty, offset, aid), CTermData::CInt(_, _, y), Some(fu), _) => {
@@ -603,7 +603,7 @@ impl Embeddable for Ct {
                     .map(|i| self.declare_input(ctx, ty, idx_name(&name, i), visibility, None))
                     .collect();
                 let mut mem = ctx.mem.borrow_mut();
-                let id = mem.zero_allocate(*n, 32, ty.num_bits());
+                let id = mem.zero_allocate(*n, 64, ty.num_bits());
                 let arr = Self::T {
                     term: CTermData::CArray(*ty.clone(), Some(id)),
                     udef: false,
@@ -611,7 +611,7 @@ impl Embeddable for Ct {
                 for (i, t) in v.iter().enumerate() {
                     let val = t.term.term(ctx);
                     let t_term = leaf_term(Op::Const(Value::Bool(true)));
-                    mem.store(id, bv_lit(i, 32), val, t_term);
+                    mem.store(id, bv_lit(i, 64), val, t_term);
                 }
                 arr
             }

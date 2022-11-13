@@ -32,7 +32,7 @@ pub struct ParamInfo {
 }
 
 pub struct ConstIteration {
-    pub val: i32,
+    pub val: i64,
 }
 
 impl Display for FnInfo {

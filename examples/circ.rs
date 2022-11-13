@@ -344,7 +344,7 @@ fn main() {
                         r1cs_to_zkif(&prover_data, &input_map, &field);
 
                     // convert zkinterface R1CS -> SIEVE IR
-                    let dir = PathBuf::from("/Users/jesskwoods/Repos/circ/test");
+                    let dir = PathBuf::from("./");
                     let sink = FilesSink::new_clean(&dir).unwrap();
                     let mut converter = FromR1CSConverter::new(sink, &zki_header);
                     match converter.ingest_witness(&zki_witness) {

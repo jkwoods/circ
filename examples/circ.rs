@@ -39,13 +39,13 @@ use std::path::{Path, PathBuf};
 use structopt::clap::arg_enum;
 use structopt::StructOpt;
 
+use circ::target::r1cs::spartan::r1cs_to_spartan;
 use libspartan::{Instance, NIZKGens, NIZK};
 use merlin::Transcript;
-use circ::target::r1cs::spartan::r1cs_to_spartan;
 
-use zki_sieve::{producers::from_r1cs::FromR1CSConverter, FilesSink};
 use circ::target::r1cs::zkif::r1cs_to_zkif;
 use rug::Integer;
+use zki_sieve::{producers::from_r1cs::FromR1CSConverter, FilesSink};
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "circ", about = "CirC: the circuit compiler")]
@@ -108,6 +108,8 @@ enum Backend {
         action: ProofAction,
         #[structopt(long, default_value = "")]
         custom_mod: String,
+        #[structopt(long, name = "FILE", parse(from_os_str))]
+        outdir: Option<PathBuf>,
     },
     Smt {},
     Ilp {},
@@ -148,7 +150,7 @@ arg_enum! {
         Setup,
         Verify,
         Spartan,
-        Zkif,
+        Sieve,
     }
 }
 
@@ -293,13 +295,17 @@ fn main() {
             instance,
             lc_elimination_thresh,
             custom_mod,
+            outdir,
             ..
         } => {
             println!("Converting to r1cs");
             let field;
             match custom_mod.as_str() {
-                "" => { field = FieldT::from(DFL_T.modulus()).clone(); }
-                _  => { field = FieldT::from(Integer::from_str_radix(&custom_mod,10).unwrap());
+                "" => {
+                    field = FieldT::from(DFL_T.modulus()).clone();
+                }
+                _ => {
+                    field = FieldT::from(Integer::from_str_radix(&custom_mod, 10).unwrap());
                     if language != DeterminedLanguage::C {
                         panic!("Modulus can only be changed at compile time if you are using C as a frontend. Otherwise, you are going to need to overhaul the compiler.");
                     }
@@ -351,8 +357,8 @@ fn main() {
                     let gens = NIZKGens::new(num_cons, num_vars, num_inputs);
                     // produce proof
                     let mut prover_transcript = Transcript::new(b"nizk_example");
-                    let pf = NIZK::prove(&inst, vars, &inps, &gens, &mut prover_transcript);            
-    
+                    let pf = NIZK::prove(&inst, vars, &inps, &gens, &mut prover_transcript);
+
                     println!("Verifying with Spartan");
                     // verify proof
                     let mut verifier_transcript = Transcript::new(b"nizk_example");
@@ -361,24 +367,26 @@ fn main() {
                         .is_ok());
 
                     println!("Proof verification successful!");
-                    
                 }
-                ProofAction::Zkif => {
-
+                ProofAction::Sieve => {
                     // convert CirC R1CS -> zkinterface R1CS
-                    let (zki_header, zki_r1cs, zki_witness) = r1cs_to_zkif(r1cs);                    
+                    let (zki_header, zki_r1cs, zki_witness) = r1cs_to_zkif(r1cs);
 
                     // convert zkinterface R1CS -> SIEVE IR
-                    let dir = PathBuf::from("/Users/jesskwoods/Repos/circ/test");
+                    let dir = outdir.unwrap();
                     let sink = FilesSink::new_clean(&dir).unwrap();
                     let mut converter = FromR1CSConverter::new(sink, &zki_header);
                     match converter.ingest_witness(&zki_witness) {
-                        Ok(()) => {},
-                        Err(e) => { panic!("Unable to ingest zkinterface witness: {}", e)}
+                        Ok(()) => {}
+                        Err(e) => {
+                            panic!("Unable to ingest zkinterface witness: {}", e)
+                        }
                     };
                     match converter.ingest_constraints(&zki_r1cs) {
-                        Ok(()) => {},
-                        Err(e) => { panic!("Unable to ingest zkinterface constraints: {}", e)}
+                        Ok(()) => {}
+                        Err(e) => {
+                            panic!("Unable to ingest zkinterface constraints: {}", e)
+                        }
                     }
                     converter.finish();
                 }

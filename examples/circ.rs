@@ -305,13 +305,15 @@ fn main() {
                     field = FieldT::from(DFL_T.modulus()).clone();
                 }
                 _ => {
+                    println!("USING CUSTOM");
                     field = FieldT::from(Integer::from_str_radix(&custom_mod, 10).unwrap());
                     if language != DeterminedLanguage::C {
                         panic!("Modulus can only be changed at compile time if you are using C as a frontend. Otherwise, you are going to need to overhaul the compiler.");
                     }
                 }
             }
-            let r1cs = to_r1cs(cs, field);
+            //println!("field {:#?}", field.clone());
+            let r1cs = to_r1cs(cs, field.clone());
             println!("Pre-opt R1cs size: {}", r1cs.constraints().len());
             let r1cs = reduce_linearities(r1cs, Some(lc_elimination_thresh));
             println!("Final R1cs size: {}", r1cs.constraints().len());
@@ -370,7 +372,7 @@ fn main() {
                 }
                 ProofAction::Sieve => {
                     // convert CirC R1CS -> zkinterface R1CS
-                    let (zki_header, zki_r1cs, zki_witness) = r1cs_to_zkif(r1cs);
+                    let (zki_header, zki_r1cs, zki_witness) = r1cs_to_zkif(r1cs, &field);
 
                     // convert zkinterface R1CS -> SIEVE IR
                     let dir = outdir.unwrap();

@@ -9,7 +9,7 @@ use circ_fields::FieldT;
 #[cfg(not(feature = "ff_dfl"))]
 use lazy_static::lazy_static;
 #[cfg(feature = "ristretto255")]
-use rug::{Integer};
+use rug::Integer;
 
 #[cfg(all(feature = "bls12381", feature = "ff_dfl"))]
 /// Default field
@@ -42,4 +42,3 @@ lazy_static! {
     /// Default field
     pub static ref DFL_T: FieldT = FieldT::from(RISTRETTO255_MOD.clone());
 }
-

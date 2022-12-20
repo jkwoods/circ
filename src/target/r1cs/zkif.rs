@@ -8,8 +8,10 @@ use zkinterface::{BilinearConstraint, CircuitHeader, ConstraintSystem, Variables
 /// circ R1cs -> zkif
 pub fn r1cs_to_zkif<S: Eq + Hash + Clone + Display>(
     r1cs: R1cs<S>,
-    field: &FieldT,
+    custom_mod: &str,
 ) -> (CircuitHeader, ConstraintSystem, Witness) {
+    let field = &FieldT::from(Integer::from_str_radix(custom_mod, 10).unwrap());
+
     let mut inp: Vec<(u64, Integer)> = Vec::new();
     let mut wit: Vec<(u64, Integer)> = Vec::new();
 
@@ -28,7 +30,6 @@ pub fn r1cs_to_zkif<S: Eq + Hash + Clone + Display>(
                 } else {
                     // witness
                     //println!("As private witness: {}", name);
-
                     wit.push(((k + 1) as u64, v.i()));
                 }
             }

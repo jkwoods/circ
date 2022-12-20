@@ -372,7 +372,8 @@ fn main() {
                 }
                 ProofAction::Sieve => {
                     // convert CirC R1CS -> zkinterface R1CS
-                    let (zki_header, zki_r1cs, zki_witness) = r1cs_to_zkif(r1cs, &field);
+                    let (zki_header, zki_r1cs, zki_witness) =
+                        r1cs_to_zkif(r1cs, &custom_mod.as_str());
 
                     // convert zkinterface R1CS -> SIEVE IR
                     let dir = outdir.unwrap();

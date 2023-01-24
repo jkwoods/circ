@@ -25,7 +25,7 @@ use rug::Integer;
 use super::*;
 
 /// Convert a (rug) integer to a prime field element.
-fn int_to_ff<F: PrimeField>(i: Integer) -> F {
+pub fn int_to_ff<F: PrimeField>(i: Integer) -> F {
     let mut accumulator = F::from(0);
     let limb_bits = (std::mem::size_of::<limb_t>() as u64) << 3;
     let limb_base = F::from(2).pow_vartime([limb_bits]);
@@ -39,7 +39,7 @@ fn int_to_ff<F: PrimeField>(i: Integer) -> F {
 
 /// Convert one our our linear combinations to a bellman linear combination.
 /// Takes a zero linear combination. We could build it locally, but bellman provides one, so...
-fn lc_to_bellman<F: PrimeField, CS: ConstraintSystem<F>>(
+pub fn lc_to_bellman<F: PrimeField, CS: ConstraintSystem<F>>(
     vars: &HashMap<usize, Variable>,
     lc: &Lc,
     zero_lc: LinearCombination<F>,

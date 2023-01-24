@@ -14,6 +14,7 @@ use crate::ir::term::*;
 
 #[cfg(feature = "bellman")]
 pub mod bellman;
+pub mod nova;
 pub mod opt;
 #[cfg(feature = "spartan")]
 pub mod spartan;

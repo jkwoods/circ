@@ -83,18 +83,19 @@ fn get_modulus<F: Field + PrimeField>() -> Integer {
 }
 
 #[derive(Clone, Debug)]
-pub struct DFAStepCircuit {
+pub struct DFAStepCircuit<F: PrimeField> {
     modulus: FieldT,
     idxs_signals: HashMap<usize, String, BuildHasherDefault<FxHasher>>,
     next_idx: usize,
     public_idxs: HashSet<usize>,
     constraints: Vec<(Lc, Lc, Lc)>,
     vals: Option<FxHashMap<String, Value>>,
+    temp: Option<F>,
 }
 
 // note that this will generate a single round, and no witnesses, unlike nova example code
 // witness and loops will happen at higher level as to put as little as possible deep in circ
-impl DFAStepCircuit {
+impl<F: PrimeField> DFAStepCircuit<F> {
     pub fn new(r1cs: &R1cs<String>) -> Self {
         let circuit = DFAStepCircuit {
             modulus: r1cs.modulus.clone(),
@@ -103,13 +104,14 @@ impl DFAStepCircuit {
             public_idxs: r1cs.public_idxs.clone(),
             constraints: r1cs.constraints.clone(),
             vals: None,
+            temp: None,
         };
 
         return circuit;
     }
 }
 
-impl<F: PrimeField> StepCircuit<F> for DFAStepCircuit {
+impl<F: PrimeField> StepCircuit<F> for DFAStepCircuit<F> {
     fn arity(&self) -> usize {
         2
     }

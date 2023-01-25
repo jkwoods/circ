@@ -9,20 +9,14 @@ use ::bellperson::{
 };
 use bincode::{deserialize_from, serialize_into};
 // use ff::PrimeField;
+use super::*;
 use circ_fields::FieldT;
 use ff::{Field, PrimeField, PrimeFieldBits};
 use fxhash::FxHashMap;
+use fxhash::FxHasher;
 use gmp_mpfr_sys::gmp::limb_t;
 use group::WnafGroup;
 use log::debug;
-use pairing::{Engine, MultiMillerLoop};
-use std::collections::HashMap;
-use std::fs::File;
-use std::io::{self, BufRead, BufReader};
-use std::path::Path;
-use std::str::FromStr;
-
-use super::*;
 use nova_snark::{
     traits::{
         circuit::{StepCircuit, TrivialTestCircuit},
@@ -30,8 +24,15 @@ use nova_snark::{
     },
     CompressedSNARK, PublicParams, RecursiveSNARK,
 };
+use pairing::{Engine, MultiMillerLoop};
 use rug::integer::{IsPrime, Order};
 use rug::Integer;
+use std::collections::HashMap;
+use std::fs::File;
+use std::hash::BuildHasherDefault;
+use std::io::{self, BufRead, BufReader};
+use std::path::Path;
+use std::str::FromStr;
 
 /// Convert a (rug) integer to a prime field element.
 fn int_to_ff<F: PrimeField>(i: Integer) -> F {
@@ -82,16 +83,33 @@ fn get_modulus<F: Field + PrimeField>() -> Integer {
 }
 
 #[derive(Clone, Debug)]
-struct DFAStepCircuit<F: PrimeField> {
+pub struct DFAStepCircuit {
     modulus: FieldT,
-    idxs_signals: HashMap<usize, String>,
+    idxs_signals: HashMap<usize, String, BuildHasherDefault<FxHasher>>,
     next_idx: usize,
     public_idxs: HashSet<usize>,
     constraints: Vec<(Lc, Lc, Lc)>,
-    temp: F,
+    vals: Option<FxHashMap<String, Value>>,
 }
 
-impl<F: PrimeField> StepCircuit<F> for DFAStepCircuit<F> {
+// note that this will generate a single round, and no witnesses, unlike nova example code
+// witness and loops will happen at higher level as to put as little as possible deep in circ
+impl DFAStepCircuit {
+    pub fn new(r1cs: &R1cs<String>) -> Self {
+        let circuit = DFAStepCircuit {
+            modulus: r1cs.modulus.clone(),
+            idxs_signals: r1cs.idxs_signals.clone(),
+            next_idx: r1cs.next_idx,
+            public_idxs: r1cs.public_idxs.clone(),
+            constraints: r1cs.constraints.clone(),
+            vals: None,
+        };
+
+        return circuit;
+    }
+}
+
+impl<F: PrimeField> StepCircuit<F> for DFAStepCircuit {
     fn arity(&self) -> usize {
         2
     }
@@ -108,12 +126,12 @@ impl<F: PrimeField> StepCircuit<F> for DFAStepCircuit<F> {
     where
         CS: ConstraintSystem<F>,
     {
-        let f_mod = get_modulus::<F>();
+        let f_mod = get_modulus::<F>(); // TODO
 
         assert_eq!(
             self.modulus.modulus(),
             &f_mod,
-            "\nR1CS has modulus \n{},\n but Bellman CS expects \n{}",
+            "\nR1CS has modulus \n{},\n but Nova CS expects \n{}",
             self.modulus,
             f_mod
         );
@@ -142,7 +160,7 @@ impl<F: PrimeField> StepCircuit<F> for DFAStepCircuit<F> {
                     let name_f = || s.to_string();
                     let val_f = || {
                         Ok({
-                            let i_val = self.1.as_ref().expect("missing values").get(s).unwrap();
+                            let i_val = self.vals.as_ref().expect("missing values").get(s).unwrap();
                             let ff_val = int_to_ff(i_val.as_pf().into());
                             debug!("value : {} -> {:?} ({})", s, ff_val, i_val);
                             ff_val

@@ -59,7 +59,7 @@ pub fn lc_to_bellman<F: PrimeField, CS: ConstraintSystem<F>>(
 }
 
 // hmmm... this should work essentially all the time, I think
-fn get_modulus<F: Field + PrimeField>() -> Integer {
+pub fn get_modulus<F: Field + PrimeField>() -> Integer {
     let neg_1_f = -F::one();
     let p_lsf: Integer = Integer::from_digits(neg_1_f.to_repr().as_ref(), Order::Lsf) + 1;
     let p_msf: Integer = Integer::from_digits(neg_1_f.to_repr().as_ref(), Order::Msf) + 1;

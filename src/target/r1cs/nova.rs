@@ -3,9 +3,13 @@ type G1 = pasta_curves::pallas::Point;
 type G2 = pasta_curves::vesta::Point;
 use crate::target::r1cs::bellman::*;
 use crate::target::r1cs::R1cs;
-use ::bellperson::{Circuit, ConstraintSystem, LinearCombination, SynthesisError, Variable};
+use ::bellperson::{
+    gadgets::num::AllocatedNum, Circuit, ConstraintSystem, LinearCombination, SynthesisError,
+    Variable,
+};
 use bincode::{deserialize_from, serialize_into};
 // use ff::PrimeField;
+use circ_fields::FieldT;
 use ff::{Field, PrimeField, PrimeFieldBits};
 use fxhash::FxHashMap;
 use gmp_mpfr_sys::gmp::limb_t;
@@ -18,10 +22,16 @@ use std::io::{self, BufRead, BufReader};
 use std::path::Path;
 use std::str::FromStr;
 
+use super::*;
+use nova_snark::{
+    traits::{
+        circuit::{StepCircuit, TrivialTestCircuit},
+        Group,
+    },
+    CompressedSNARK, PublicParams, RecursiveSNARK,
+};
 use rug::integer::{IsPrime, Order};
 use rug::Integer;
-
-use super::*;
 
 /// Convert a (rug) integer to a prime field element.
 fn int_to_ff<F: PrimeField>(i: Integer) -> F {
@@ -71,87 +81,98 @@ fn get_modulus<F: Field + PrimeField>() -> Integer {
     }
 }
 
-pub fn circ_to_bellperson<F: PrimeField>(
-    circ_r1cs: R1cs<String>,
-    circ_values: Option<FxHashMap<String, Value>>,
-) -> Vec<LinearCombination<F>> {
-    let f_mod = get_modulus::<F>();
-    assert_eq!(
-        circ_r1cs.modulus.modulus(),
-        &f_mod,
-        "\nR1CS has modulus \n{},\n but Bellman CS expects \n{}",
-        circ_r1cs.modulus,
-        f_mod
-    );
-    let mut uses = HashMap::with_capacity(circ_r1cs.next_idx);
-    for (a, b, c) in circ_r1cs.constraints.iter() {
-        [a, b, c].iter().for_each(|y| {
-            y.monomials.keys().for_each(|k| {
-                uses.get_mut(k)
-                    .map(|i| {
-                        *i += 1;
-                    })
-                    .or_else(|| {
-                        uses.insert(*k, 1);
-                        None
-                    });
-            })
-        });
+#[derive(Clone, Debug)]
+struct DFAStepCircuit<F: PrimeField> {
+    modulus: FieldT,
+    idxs_signals: HashMap<usize, String>,
+    next_idx: usize,
+    public_idxs: HashSet<usize>,
+    constraints: Vec<(Lc, Lc, Lc)>,
+    temp: F,
+}
+
+impl<F: PrimeField> StepCircuit<F> for DFAStepCircuit<F> {
+    fn arity(&self) -> usize {
+        2
     }
 
-    //let mut vars = HashMap::with_capacity(circ_r1cs.next_idx);
-    for i in 0..circ_r1cs.next_idx {
-        if let Some(s) = circ_r1cs.idxs_signals.get(&i) {
-            //for (_i, s) in circ_r1cs.idxs_signals.get() {
-            let public = circ_r1cs.public_idxs.contains(&i);
-            if uses.get(&i).is_some() || public {
-                let name_f = || s.to_string();
-                let val_f = || {
-                    Ok({
-                        let i_val = circ_values
-                            .as_ref()
-                            .expect("missing values")
-                            .get(s)
-                            .unwrap();
-                        let ff_val: F = int_to_ff(i_val.as_pf().into());
-                        debug!("value : {} -> {:?} ({})", s, ff_val, i_val);
-                        ff_val
-                    })
-                };
-                debug!("var: {}, public: {}", s, public);
+    fn output(&self, z: &[F]) -> Vec<F> {
+        vec![]
+    }
 
-                /*
-                let v = if public {
-                    cs.alloc_input(name_f, val_f)?
+    fn synthesize<CS>(
+        &self,
+        cs: &mut CS,
+        z: &[AllocatedNum<F>],
+    ) -> Result<Vec<AllocatedNum<F>>, SynthesisError>
+    where
+        CS: ConstraintSystem<F>,
+    {
+        let f_mod = get_modulus::<F>();
+
+        assert_eq!(
+            self.modulus.modulus(),
+            &f_mod,
+            "\nR1CS has modulus \n{},\n but Bellman CS expects \n{}",
+            self.modulus,
+            f_mod
+        );
+
+        let mut uses = HashMap::with_capacity(self.next_idx);
+        for (a, b, c) in self.constraints.iter() {
+            [a, b, c].iter().for_each(|y| {
+                y.monomials.keys().for_each(|k| {
+                    uses.get_mut(k)
+                        .map(|i| {
+                            *i += 1;
+                        })
+                        .or_else(|| {
+                            uses.insert(*k, 1);
+                            None
+                        });
+                })
+            });
+        }
+        let mut vars = HashMap::with_capacity(self.next_idx);
+        for i in 0..self.next_idx {
+            if let Some(s) = self.idxs_signals.get(&i) {
+                //for (_i, s) in self.0.idxs_signals.get() {
+                let public = self.public_idxs.contains(&i);
+                if uses.get(&i).is_some() || public {
+                    let name_f = || s.to_string();
+                    let val_f = || {
+                        Ok({
+                            let i_val = self.1.as_ref().expect("missing values").get(s).unwrap();
+                            let ff_val = int_to_ff(i_val.as_pf().into());
+                            debug!("value : {} -> {:?} ({})", s, ff_val, i_val);
+                            ff_val
+                        })
+                    };
+                    debug!("var: {}, public: {}", s, public);
+                    let v = if public {
+                        cs.alloc_input(name_f, val_f)?
+                    } else {
+                        cs.alloc(name_f, val_f)?
+                    };
+                    vars.insert(i, v);
                 } else {
-                    cs.alloc(name_f, val_f)?
-                };
-                */
-
-                // vars.insert(i, v);
-            } else {
-                debug!("drop dead var: {}", s);
+                    debug!("drop dead var: {}", s);
+                }
             }
         }
-    }
-    /*
-    for (i, (a, b, c)) in circ_r1cs.constraints.iter().enumerate() {
-        cs.enforce(
-            || format!("con{}", i),
-            |z| lc_to_bellman::<F, CS>(&vars, a, z),
-            |z| lc_to_bellman::<F, CS>(&vars, b, z),
-            |z| lc_to_bellman::<F, CS>(&vars, c, z),
+        for (i, (a, b, c)) in self.constraints.iter().enumerate() {
+            cs.enforce(
+                || format!("con{}", i),
+                |z| lc_to_bellman::<F, CS>(&vars, a, z),
+                |z| lc_to_bellman::<F, CS>(&vars, b, z),
+                |z| lc_to_bellman::<F, CS>(&vars, c, z),
+            );
+        }
+        debug!(
+            "done with synth: {} vars {} cs",
+            vars.len(),
+            self.constraints.len()
         );
+        Ok(vec![])
     }
-
-    debug!(
-        "done with synth: {} vars {} cs",
-        vars.len(),
-        circ_r1cs.constraints.len()
-    );
-    */
-
-    let lcs: Vec<LinearCombination<F>> = Vec::new();
-
-    return lcs;
 }

@@ -85,14 +85,13 @@ fn get_modulus<F: Field + PrimeField>() -> Integer {
 }
 
 #[derive(Clone, Debug)]
-pub struct DFAStepCircuit<F: PrimeField> {
+pub struct DFAStepCircuit {
     modulus: FieldT,
     idxs_signals: HashMap<usize, String, BuildHasherDefault<FxHasher>>,
     next_idx: usize,
     public_idxs: HashSet<usize>,
     constraints: Vec<(Lc, Lc, Lc)>,
     vals: Option<FxHashMap<String, Value>>,
-    temp: Option<F>,
 }
 
 fn type_of<T>(_: &T) {
@@ -101,23 +100,22 @@ fn type_of<T>(_: &T) {
 
 // note that this will generate a single round, and no witnesses, unlike nova example code
 // witness and loops will happen at higher level as to put as little as possible deep in circ
-impl<F: PrimeField> DFAStepCircuit<F> {
-    pub fn new(r1cs: &R1cs<String>) -> Self {
+impl DFAStepCircuit {
+    pub fn new(r1cs: &R1cs<String>, wits: Option<FxHashMap<String, Value>>) -> Self {
         let circuit = DFAStepCircuit {
             modulus: r1cs.modulus.clone(),
             idxs_signals: r1cs.idxs_signals.clone(),
             next_idx: r1cs.next_idx,
             public_idxs: r1cs.public_idxs.clone(),
             constraints: r1cs.constraints.clone(),
-            vals: None,
-            temp: None,
+            vals: wits,
         };
 
         return circuit;
     }
 }
 
-impl<F: PrimeField> StepCircuit<F> for DFAStepCircuit<F> {
+impl<F: PrimeField> StepCircuit<F> for DFAStepCircuit {
     fn arity(&self) -> usize {
         2
     }
@@ -136,6 +134,9 @@ impl<F: PrimeField> StepCircuit<F> for DFAStepCircuit<F> {
         G1: Group<Base = <G2 as Group>::Scalar>,
         G2: Group<Base = <G1 as Group>::Scalar>,
     {
+        let mut state_i = z[0].clone();
+        let mut char_i = z[1].clone();
+
         let f_mod = get_modulus::<F>(); // TODO
 
         assert_eq!(
@@ -198,10 +199,13 @@ impl<F: PrimeField> StepCircuit<F> for DFAStepCircuit<F> {
 
             let z = LinearCombination::zero();
             println!(
-                "i= {:#?}, a= {:#?}, b= {:#?}, c= {:#?}",
+                "i= {:#?}, a= {:#?} -> {:#?}, b= {:#?} -> {:#?}, c= {:#?} -> {:#?}",
                 i,
+                a,
                 lc_to_bellman::<F, CS>(&vars, a, z.clone()),
+                b,
                 lc_to_bellman::<F, CS>(&vars, b, z.clone()),
+                c,
                 lc_to_bellman::<F, CS>(&vars, c, z.clone()),
             );
         }
@@ -232,6 +236,8 @@ impl<F: PrimeField> StepCircuit<F> for DFAStepCircuit<F> {
             self.constraints.len()
         );
 
+        //let next_char = AllocatedNum::alloc(cs.namespace(|| format!("char")), || Ok(self.....?)
         Ok(vec![])
+        //Ok(vec![next_state.clone(), next_char])
     }
 }

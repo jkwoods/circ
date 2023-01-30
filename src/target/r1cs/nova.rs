@@ -1,7 +1,7 @@
 #![allow(missing_docs)]
 type G1 = pasta_curves::pallas::Point;
 type G2 = pasta_curves::vesta::Point;
-use crate::target::r1cs::bellman::*;
+type S = pasta_curves::pallas::Scalar; // TODO del
 use crate::target::r1cs::R1cs;
 use ::bellperson::{
     gadgets::num::AllocatedNum, Circuit, ConstraintSystem, LinearCombination, SynthesisError,
@@ -17,14 +17,16 @@ use fxhash::FxHasher;
 use gmp_mpfr_sys::gmp::limb_t;
 use group::WnafGroup;
 use log::debug;
+use nova_snark::poseidon::*;
 use nova_snark::{
     traits::{
         circuit::{StepCircuit, TrivialTestCircuit},
-        Group,
+        Group, ROCircuitTrait, ROConstants, ROConstantsCircuit, ROConstantsTrait,
     },
     CompressedSNARK, PublicParams, RecursiveSNARK,
 };
 use pairing::{Engine, MultiMillerLoop};
+use rand::rngs::OsRng;
 use rug::integer::{IsPrime, Order};
 use rug::Integer;
 use std::collections::HashMap;
@@ -93,6 +95,10 @@ pub struct DFAStepCircuit<F: PrimeField> {
     temp: Option<F>,
 }
 
+fn type_of<T>(_: &T) {
+    println!("{}", std::any::type_name::<T>())
+}
+
 // note that this will generate a single round, and no witnesses, unlike nova example code
 // witness and loops will happen at higher level as to put as little as possible deep in circ
 impl<F: PrimeField> DFAStepCircuit<F> {
@@ -127,6 +133,8 @@ impl<F: PrimeField> StepCircuit<F> for DFAStepCircuit<F> {
     ) -> Result<Vec<AllocatedNum<F>>, SynthesisError>
     where
         CS: ConstraintSystem<F>,
+        G1: Group<Base = <G2 as Group>::Scalar>,
+        G2: Group<Base = <G1 as Group>::Scalar>,
     {
         let f_mod = get_modulus::<F>(); // TODO
 
@@ -187,12 +195,43 @@ impl<F: PrimeField> StepCircuit<F> for DFAStepCircuit<F> {
                 |z| lc_to_bellman::<F, CS>(&vars, b, z),
                 |z| lc_to_bellman::<F, CS>(&vars, c, z),
             );
+
+            let z = LinearCombination::zero();
+            println!(
+                "i= {:#?}, a= {:#?}, b= {:#?}, c= {:#?}",
+                i,
+                lc_to_bellman::<F, CS>(&vars, a, z.clone()),
+                lc_to_bellman::<F, CS>(&vars, b, z.clone()),
+                lc_to_bellman::<F, CS>(&vars, c, z.clone()),
+            );
         }
+
+        //let pc_constants = ROConstants::<G1>::new();
+        //let num_absorbs = 2;
+
+        // let mut poseidon: ROConstantsCircuit<G2> = ROConstantsCircuit::<G2>::new();
+
+        // let mut test_cs: SatisfyingAssignment<G> = SatisfyingAssignment::new();
+        /*
+        let num = F::random(&mut OsRng);
+        let i = 0;
+        let num_gadget =
+            AllocatedNum::alloc(cs.namespace(|| format!("data {}", i)), || Ok(num)).unwrap();
+        num_gadget
+            .inputize(&mut cs.namespace(|| format!("input {}", i)))
+            .unwrap();
+        poseidon.absorb(num_gadget);
+
+        let num_chal_bits = 128;
+        let out = poseidon.squeeze(&mut cs, 128).unwrap();
+        */
+        println!("CIRC CS {:#?}", self.constraints);
         debug!(
             "done with synth: {} vars {} cs",
             vars.len(),
             self.constraints.len()
         );
+
         Ok(vec![])
     }
 }

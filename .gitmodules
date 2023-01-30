@@ -1,0 +1,3 @@
+[submodule "nova-fork"]
+	path = nova-fork
+	url = https://github.com/jkwoods/Nova

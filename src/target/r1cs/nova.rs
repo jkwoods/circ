@@ -96,6 +96,7 @@ pub struct DFAStepCircuit<F: PrimeField> {
     current_char: F,
     next_state: F,
     next_char: F,
+    //    round: usize,
 }
 
 fn type_of<T>(_: &T) {
@@ -259,10 +260,11 @@ impl<F: PrimeField> StepCircuit<F> for DFAStepCircuit<F> {
             self.constraints.len()
         );
 
-        let next_state =
-            AllocatedNum::alloc(cs.namespace(|| format!("char")), || Ok(self.next_state))?; // idk if we should pull this from cs
+        let next_state = AllocatedNum::alloc(cs.namespace(|| format!("next_state")), || {
+            Ok(self.next_state)
+        })?; // idk if we should pull this from cs
         let next_char =
-            AllocatedNum::alloc(cs.namespace(|| format!("char")), || Ok(self.next_char))?;
+            AllocatedNum::alloc(cs.namespace(|| format!("next_char")), || Ok(self.next_char))?;
         Ok(vec![next_state, next_char])
     }
 }

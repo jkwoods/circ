@@ -85,13 +85,17 @@ fn get_modulus<F: Field + PrimeField>() -> Integer {
 }
 
 #[derive(Clone, Debug)]
-pub struct DFAStepCircuit {
+pub struct DFAStepCircuit<F: PrimeField> {
     modulus: FieldT,
     idxs_signals: HashMap<usize, String, BuildHasherDefault<FxHasher>>,
     next_idx: usize,
     public_idxs: HashSet<usize>,
     constraints: Vec<(Lc, Lc, Lc)>,
     vals: Option<FxHashMap<String, Value>>,
+    current_state: F,
+    current_char: F,
+    next_state: F,
+    next_char: F,
 }
 
 fn type_of<T>(_: &T) {
@@ -100,8 +104,17 @@ fn type_of<T>(_: &T) {
 
 // note that this will generate a single round, and no witnesses, unlike nova example code
 // witness and loops will happen at higher level as to put as little as possible deep in circ
-impl DFAStepCircuit {
-    pub fn new(r1cs: &R1cs<String>, wits: Option<FxHashMap<String, Value>>) -> Self {
+impl<F: PrimeField> DFAStepCircuit<F> {
+    pub fn new(
+        r1cs: &R1cs<String>,
+        wits: Option<FxHashMap<String, Value>>,
+        state_i: F,
+        char_i: F,
+        state_i_plus_1: F,
+        char_i_plus_1: F,
+    ) -> Self {
+        // todo check wits line up with the non det advice
+
         let circuit = DFAStepCircuit {
             modulus: r1cs.modulus.clone(),
             idxs_signals: r1cs.idxs_signals.clone(),
@@ -109,21 +122,31 @@ impl DFAStepCircuit {
             public_idxs: r1cs.public_idxs.clone(),
             constraints: r1cs.constraints.clone(),
             vals: wits,
+            current_state: state_i,
+            current_char: char_i,
+            next_state: state_i_plus_1,
+            next_char: char_i_plus_1,
         };
 
         return circuit;
     }
 }
 
-impl<F: PrimeField> StepCircuit<F> for DFAStepCircuit {
+impl<F: PrimeField> StepCircuit<F> for DFAStepCircuit<F> {
     fn arity(&self) -> usize {
         2
     }
 
     fn output(&self, z: &[F]) -> Vec<F> {
-        vec![]
+        // sanity check
+        assert_eq!(z[0], self.current_state);
+        assert_eq!(z[1], self.current_char);
+
+        vec![self.next_state, self.next_char]
     }
 
+    // nova wants this to return the "output" of each step, meaning alloc'ed `next_state` and
+    // `next_char`
     fn synthesize<CS>(
         &self,
         cs: &mut CS,
@@ -236,8 +259,10 @@ impl<F: PrimeField> StepCircuit<F> for DFAStepCircuit {
             self.constraints.len()
         );
 
-        //let next_char = AllocatedNum::alloc(cs.namespace(|| format!("char")), || Ok(self.....?)
-        Ok(vec![])
-        //Ok(vec![next_state.clone(), next_char])
+        let next_state =
+            AllocatedNum::alloc(cs.namespace(|| format!("char")), || Ok(self.next_state))?; // idk if we should pull this from cs
+        let next_char =
+            AllocatedNum::alloc(cs.namespace(|| format!("char")), || Ok(self.next_char))?;
+        Ok(vec![next_state, next_char])
     }
 }

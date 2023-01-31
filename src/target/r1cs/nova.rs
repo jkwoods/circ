@@ -1,40 +1,23 @@
 #![allow(missing_docs)]
 type G1 = pasta_curves::pallas::Point;
 type G2 = pasta_curves::vesta::Point;
-type S = pasta_curves::pallas::Scalar; // TODO del
+use super::*;
 use crate::target::r1cs::R1cs;
 use ::bellperson::{
-    gadgets::num::AllocatedNum, Circuit, ConstraintSystem, LinearCombination, SynthesisError,
-    Variable,
+    gadgets::num::AllocatedNum, ConstraintSystem, LinearCombination, SynthesisError, Variable,
 };
-use bincode::{deserialize_from, serialize_into};
-// use ff::PrimeField;
-use super::*;
 use circ_fields::FieldT;
-use ff::{Field, PrimeField, PrimeFieldBits};
+use ff::{Field, PrimeField};
 use fxhash::FxHashMap;
 use fxhash::FxHasher;
 use gmp_mpfr_sys::gmp::limb_t;
-use group::WnafGroup;
 use log::debug;
-use nova_snark::poseidon::*;
-use nova_snark::{
-    traits::{
-        circuit::{StepCircuit, TrivialTestCircuit},
-        Group, ROCircuitTrait, ROConstants, ROConstantsCircuit, ROConstantsTrait,
-    },
-    CompressedSNARK, PublicParams, RecursiveSNARK,
-};
-use pairing::{Engine, MultiMillerLoop};
-use rand::rngs::OsRng;
+//use nova_snark::poseidon::*;
+use nova_snark::traits::{circuit::StepCircuit, Group};
 use rug::integer::{IsPrime, Order};
 use rug::Integer;
 use std::collections::HashMap;
-use std::fs::File;
 use std::hash::BuildHasherDefault;
-use std::io::{self, BufRead, BufReader};
-use std::path::Path;
-use std::str::FromStr;
 
 /// Convert a (rug) integer to a prime field element.
 fn int_to_ff<F: PrimeField>(i: Integer) -> F {
@@ -99,10 +82,6 @@ pub struct DFAStepCircuit<F: PrimeField> {
     //    round: usize,
 }
 
-fn type_of<T>(_: &T) {
-    println!("{}", std::any::type_name::<T>())
-}
-
 // note that this will generate a single round, and no witnesses, unlike nova example code
 // witness and loops will happen at higher level as to put as little as possible deep in circ
 impl<F: PrimeField> DFAStepCircuit<F> {
@@ -158,8 +137,9 @@ impl<F: PrimeField> StepCircuit<F> for DFAStepCircuit<F> {
         G1: Group<Base = <G2 as Group>::Scalar>,
         G2: Group<Base = <G1 as Group>::Scalar>,
     {
-        let mut state_i = z[0].clone();
-        let mut char_i = z[1].clone();
+        //let state_i = z[0].clone();
+        //let char_i = z[1].clone();
+        // incorp into circuit?
 
         let f_mod = get_modulus::<F>(); // TODO
 

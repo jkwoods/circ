@@ -59,6 +59,7 @@ impl FrontEnd for ZSharpFE {
             .unwrap_or_else(|rc| (*rc).clone())
             .into_inner();
         cs.comps.insert("main".to_string(), main_comp);
+        println!("ZOK CS {:#?}", cs);
         cs
     }
 }

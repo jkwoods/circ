@@ -177,19 +177,21 @@ impl<F: PrimeField> StepCircuit<F> for DFAStepCircuit<F> {
                         Ok({
                             let i_val = self.vals.as_ref().expect("missing values").get(s).unwrap();
                             let ff_val = int_to_ff(i_val.as_pf().into());
-                            debug!("value : {} -> {:?} ({})", s, ff_val, i_val);
+                            println!("value : {} -> {:?} ({})", s, ff_val, i_val);
                             ff_val
                         })
                     };
-                    debug!("var: {}, public: {}", s, public);
+                    println!("var: {}, public: {}", s, public);
                     let v = if public {
-                        cs.alloc_input(name_f, val_f)?
+                        // cs.alloc_input(name_f, val_f)?
+                        cs.alloc(name_f, val_f)? // we don't care what circ thinks is public,
+                                                 // as we are lying to circ anyway
                     } else {
                         cs.alloc(name_f, val_f)?
                     };
                     vars.insert(i, v);
                 } else {
-                    debug!("drop dead var: {}", s);
+                    println!("drop dead var: {}", s);
                 }
             }
         }

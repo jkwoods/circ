@@ -118,11 +118,11 @@ impl<'a, F: PrimeField> Circuit<F> for SynthInput<'a> {
                         Ok({
                             let i_val = self.1.as_ref().expect("missing values").get(s).unwrap();
                             let ff_val = int_to_ff(i_val.as_pf().into());
-                            debug!("value : {} -> {:?} ({})", s, ff_val, i_val);
+                            println!("value : {} -> {:?} ({})", s, ff_val, i_val);
                             ff_val
                         })
                     };
-                    debug!("var: {}, public: {}", s, public);
+                    println!("var: {}, public: {}", s, public);
                     let v = if public {
                         cs.alloc_input(name_f, val_f)?
                     } else {
@@ -130,7 +130,7 @@ impl<'a, F: PrimeField> Circuit<F> for SynthInput<'a> {
                     };
                     vars.insert(i, v);
                 } else {
-                    debug!("drop dead var: {}", s);
+                    println!("drop dead var: {}", s);
                 }
             }
         }

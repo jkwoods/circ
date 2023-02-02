@@ -274,7 +274,7 @@ fn main() {
         } => {
             println!("Converting to r1cs");
             let (mut prover_data, verifier_data) = to_r1cs(cs.get("main").clone(), cfg());
-
+            println!("R1CS: {:#?}", prover_data);
             println!(
                 "Pre-opt R1cs size: {}",
                 prover_data.r1cs.constraints().len()
@@ -282,6 +282,7 @@ fn main() {
             prover_data.r1cs = reduce_linearities(prover_data.r1cs, cfg());
 
             println!("Final R1cs size: {}", prover_data.r1cs.constraints().len());
+            println!("R1CS: {:#?}", prover_data);
             match action {
                 ProofAction::Count => (),
                 #[cfg(feature = "bellman")]

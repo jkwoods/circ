@@ -51,7 +51,7 @@ nova-snark = { git = "https://github.com/jkwoods/Nova" }
 bellperson = { version = "0.24", default-features = false }
 pasta_curves = { version = "0.4.0", features = ["repr-c"] }
 generic-array = "0.14.4"
-
+neptune = "8.1.0"
 
 [dev-dependencies]
 quickcheck = "1"

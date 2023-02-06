@@ -10,14 +10,23 @@ use circ_fields::FieldT;
 use ff::{Field, PrimeField};
 use fxhash::FxHashMap;
 use fxhash::FxHasher;
+use generic_array::typenum;
 use gmp_mpfr_sys::gmp::limb_t;
 use log::debug;
-//use nova_snark::poseidon::*;
+use neptune::{
+    circuit::poseidon_hash,
+    poseidon::{Arity, HashMode, Poseidon, PoseidonConstants},
+    Strength,
+};
 use nova_snark::traits::{circuit::StepCircuit, Group};
 use rug::integer::{IsPrime, Order};
 use rug::Integer;
 use std::collections::HashMap;
 use std::hash::BuildHasherDefault;
+
+fn type_of<T>(_: &T) {
+    println!("{}", std::any::type_name::<T>())
+}
 
 /// Convert a (rug) integer to a prime field element.
 fn int_to_ff<F: PrimeField>(i: Integer) -> F {
@@ -79,7 +88,6 @@ pub struct DFAStepCircuit<F: PrimeField> {
     current_char: F,
     next_state: F,
     next_char: F,
-    //    round: usize,
 }
 
 // note that this will generate a single round, and no witnesses, unlike nova example code
@@ -216,6 +224,36 @@ impl<F: PrimeField> StepCircuit<F> for DFAStepCircuit<F> {
             );
         }
 
+        // expected hash value (witness)
+        let pc = PoseidonConstants::<F, typenum::U2>::new_with_strength(Strength::Standard);
+        let mut fr_data = vec![self.current_char, self.current_char];
+        let mut p = Poseidon::<F, typenum::U2>::new_with_preimage(&fr_data, &pc);
+        let expected: F = p.hash(); //_in_mode(HashMode::Correct);
+
+        let next_state = AllocatedNum::alloc(cs.namespace(|| format!("next_state")), || {
+            Ok(self.next_state)
+        })?; // idk if we should pull this from cs - see
+             // https://github.com/zkcrypto/bellman/blob/2759d930622a7f18b83a905c9f054d52a0bbe748/src/gadgets/num.rs,
+             // line 31 ish
+        let next_char =
+            AllocatedNum::alloc(cs.namespace(|| format!("next_char")), || Ok(self.next_char))?;
+
+        // circuit poseidon
+        let data: Vec<AllocatedNum<F>> = vec![
+            AllocatedNum::alloc(cs.namespace(|| "prev_hash"), || Ok(self.current_char)).unwrap(),
+            AllocatedNum::alloc(cs.namespace(|| "current_char"), || Ok(self.current_char)).unwrap(),
+        ];
+
+        let out = poseidon_hash(cs, data, &pc); //.expect("poseidon hashing failed");
+
+        println!(
+            "expected {:#?}, out {:#?}",
+            expected,
+            out?.get_value(), //.unwrap()
+        );
+
+        // assert_eq!(expected, out.get_value().unwrap()); //get_value().unwrap());
+
         //let pc_constants = ROConstants::<G1>::new();
         //let num_absorbs = 2;
 
@@ -242,11 +280,8 @@ impl<F: PrimeField> StepCircuit<F> for DFAStepCircuit<F> {
             self.constraints.len()
         );
 
-        let next_state = AllocatedNum::alloc(cs.namespace(|| format!("next_state")), || {
-            Ok(self.next_state)
-        })?; // idk if we should pull this from cs
-        let next_char =
-            AllocatedNum::alloc(cs.namespace(|| format!("next_char")), || Ok(self.next_char))?;
         Ok(vec![next_state, next_char])
+
+        //Ok(vec![])
     }
 }

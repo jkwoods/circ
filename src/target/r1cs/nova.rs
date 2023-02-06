@@ -18,7 +18,8 @@ use neptune::{
     poseidon::{Arity, HashMode, Poseidon, PoseidonConstants},
     Strength,
 };
-use nova_snark::traits::{circuit::StepCircuit, Group};
+use nova_snark::{StepCounterType, FINA
+L_EXTERNAL_COUNTER, traits::{circuit::StepCircuit, Group}};
 use rug::integer::{IsPrime, Order};
 use rug::Integer;
 use std::collections::HashMap;
@@ -132,6 +133,10 @@ impl<F: PrimeField> StepCircuit<F> for DFAStepCircuit<F> {
 
         vec![self.next_state, self.next_char]
     }
+
+    fn get_counter_type(&self) -> StepCounterType {
+    StepCounterType::External
+  }
 
     // nova wants this to return the "output" of each step, meaning alloc'ed `next_state` and
     // `next_char`

@@ -20,7 +20,7 @@ use neptune::{
 };
 use nova_snark::{
     traits::{circuit::StepCircuit, Group},
-    StepCounterType, FINAL_EXTERNAL_COUNTER,
+    StepCounterType,
 };
 use rug::integer::{IsPrime, Order};
 use rug::Integer;
@@ -119,6 +119,8 @@ pub struct DFAStepCircuit<F: PrimeField> {
     next_char: F,
     prev_hash: F,
     next_hash: F,
+    round_num: F,
+    next_round_num: u64,
     pc: PoseidonConstants<F, typenum::U2>,
 }
 
@@ -134,6 +136,8 @@ impl<F: PrimeField> DFAStepCircuit<F> {
         char_i_plus_1: F,
         hash_i: F,
         hash_i_plus_1: F,
+        round_i: F,
+        round_i_plus_1: u64,
         pcs: PoseidonConstants<F, typenum::U2>,
     ) -> Self {
         // todo check wits line up with the non det advice
@@ -151,6 +155,8 @@ impl<F: PrimeField> DFAStepCircuit<F> {
             next_char: char_i_plus_1,
             prev_hash: hash_i,
             next_hash: hash_i_plus_1,
+            round_num: round_i,
+            next_round_num: round_i_plus_1,
             pc: pcs,
         };
 
@@ -163,7 +169,7 @@ where
     F: PrimeField,
 {
     fn arity(&self) -> usize {
-        3
+        5 // TODO CHECK
     }
 
     fn output(&self, z: &[F]) -> Vec<F> {
@@ -171,8 +177,20 @@ where
         assert_eq!(z[0], self.current_state);
         assert_eq!(z[1], self.current_char);
         assert_eq!(z[2], self.prev_hash);
+        assert_eq!(z[3], self.round_num);
 
-        vec![self.next_state, self.next_char, self.next_hash]
+        // expected hash value (witness)
+        //let pc = PoseidonConstants::<F, typenum::U2>::new_with_strength(Strength::Standard);
+        let mut fr_data = vec![self.prev_hash, self.current_char];
+        let mut p = Poseidon::<F, typenum::U2>::new_with_preimage(&fr_data, &self.pc);
+        let expected_hash: F = p.hash();
+
+        vec![
+            self.next_state,
+            self.next_char,
+            expected_hash,
+            self.round_num + F::from(1),
+        ]
     }
 
     fn get_counter_type(&self) -> StepCounterType {
@@ -191,17 +209,17 @@ where
         G1: Group<Base = <G2 as Group>::Scalar>,
         G2: Group<Base = <G1 as Group>::Scalar>,
     {
-        //let state_i = z[0].clone();
-        //let char_i = z[1].clone();
-        // incorp into circuit?
-
+        // inputs
+        let current_char = z[0].clone();
+        let current_state = z[1].clone();
         let prev_hash = z[2].clone();
+        let round_num = z[3].clone();
 
+        // ouputs
         let mut next_state = None;
-        //let mut next_char;
-        let mut current_char = None;
-        //let mut current_state;
-        //let mut bool_out;
+        //let mut next_hash = None;
+        //let mut next_round_num = None;
+        let mut bool_out = None;
 
         let f_mod = get_modulus::<F>(); // TODO
 
@@ -251,21 +269,35 @@ where
                     //} else {
                     //cs.alloc(name_f, val_f)?
                     //};
-                    let alloc_v = AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
-                    if s.starts_with("next_state") {
+
+                    // inputs
+                    if s.starts_with("char") {
+                        let alloc_v = current_char.clone(); //AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
+                                                            //assert_eq!(val_f, current_char); //current_char = Some(alloc_v); //.get_variable();
+                        vars.insert(i, alloc_v.get_variable());
+                    } else if s.starts_with("current_state") {
+                        let alloc_v = current_state.clone(); //AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
+                                                             //assert_eq!(val_f, current_state); //current_state = alloc_v.get_variable();
+                        vars.insert(i, alloc_v.get_variable());
+                    } else if s.starts_with("round_num") {
+                        let alloc_v = round_num.clone(); //AllocatedNum::inputize(cs.namespace(name_f), val_f)?;
+                                                         //assert_eq!(val_f, round_num); //round_num = alloc_v.get_variable();
+                        vars.insert(i, alloc_v.get_variable());
+                    // outputs
+                    } else if s.starts_with("next_state") {
+                        let alloc_v = AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
                         next_state = Some(alloc_v); //.get_variable();
                         vars.insert(i, next_state.clone().unwrap().get_variable());
-                    //} else if s.starts_with("current_state") {
-                    //    current_state = alloc_v.get_variable();
-                    //    vars.insert(i, current_state);
-                    } else if s.starts_with("char") {
-                        current_char = Some(alloc_v); //.get_variable();
-                        vars.insert(i, current_char.clone().unwrap().get_variable());
-                    //} else if s.starts_with("bool_out") {
-                    // TODO public?
-                    //    bool_out = alloc_v.get_variable();
-                    //    vars.insert(i, bool_out);
+                    } else if s.starts_with("bool_out") {
+                        let alloc_v = AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
+
+                        alloc_v.inputize(cs.namespace(name_f))?;
+                        bool_out = Some(alloc_v); //.get_variable();
+                        vars.insert(i, bool_out.clone().unwrap().get_variable());
+
+                    // intermediate (in circ) wits
                     } else {
+                        let alloc_v = AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
                         let v = alloc_v.get_variable();
                         vars.insert(i, v);
                     }
@@ -296,21 +328,24 @@ where
             */
         }
 
-        // expected hash value (witness)
-        //let pc = PoseidonConstants::<F, typenum::U2>::new_with_strength(Strength::Standard);
-        let mut fr_data = vec![self.prev_hash, self.current_char];
-        let mut p = Poseidon::<F, typenum::U2>::new_with_preimage(&fr_data, &self.pc);
-        let expected: F = p.hash(); //_in_mode(HashMode::Correct);
-
         // https://github.com/zkcrypto/bellman/blob/2759d930622a7f18b83a905c9f054d52a0bbe748/src/gadgets/num.rs,
         // line 31 ish
-        let next_char =
-            AllocatedNum::alloc(cs.namespace(|| format!("next_char")), || Ok(self.next_char))?;
+
+        // for nova passing (new inputs from prover)
+        let next_char = AllocatedNum::alloc(
+            cs.namespace(|| format!("char_{}", self.next_round_num)),
+            || Ok(self.next_char),
+        )?;
+        let next_round_num = AllocatedNum::alloc(
+            cs.namespace(|| format!("round_num_{}", self.next_round_num)),
+            || Ok(self.round_num + F::from(1)),
+        )?;
+        next_round_num.inputize(cs.namespace(|| format!("round_num_{}", self.next_round_num)));
 
         // circuit poseidon
         let data: Vec<AllocatedNum<F>> = vec![
             prev_hash, //.unwrap(), //AllocatedNum::alloc(cs.namespace(|| "prev_hash"), || Ok(self.current_char)).unwrap(),
-            current_char.unwrap(),
+            current_char,
         ];
 
         let next_hash = poseidon_hash(cs, data, &self.pc); //.expect("poseidon hashing failed");
@@ -331,6 +366,12 @@ where
             self.constraints.len()
         );
 
-        Ok(vec![next_state.unwrap(), next_char, next_hash?])
+        Ok(vec![
+            next_state.unwrap(),
+            next_char,
+            next_hash?,
+            next_round_num,
+            bool_out.unwrap(),
+        ])
     }
 }

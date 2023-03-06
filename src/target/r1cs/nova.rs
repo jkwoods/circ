@@ -197,8 +197,7 @@ where
         StepCounterType::External
     }
 
-    // nova wants this to return the "output" of each step, meaning alloc'ed `next_state` and
-    // `next_char`
+    // nova wants this to return the "output" of each step
     fn synthesize<CS>(
         &self,
         cs: &mut CS,
@@ -209,6 +208,7 @@ where
         G1: Group<Base = <G2 as Group>::Scalar>,
         G2: Group<Base = <G1 as Group>::Scalar>,
     {
+        println!("SYN");
         // inputs
         let current_char = z[0].clone();
         let current_state = z[1].clone();
@@ -291,7 +291,7 @@ where
                     } else if s.starts_with("bool_out") {
                         let alloc_v = AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
 
-                        alloc_v.inputize(cs.namespace(name_f))?;
+                        alloc_v.inputize(cs.namespace(|| "output bool"))?;
                         bool_out = Some(alloc_v); //.get_variable();
                         vars.insert(i, bool_out.clone().unwrap().get_variable());
 
@@ -302,7 +302,7 @@ where
                         vars.insert(i, v);
                     }
                 } else {
-                    //println!("drop dead var: {}", s);
+                    println!("drop dead var: {}", s);
                 }
             }
         }
@@ -340,7 +340,8 @@ where
             cs.namespace(|| format!("round_num_{}", self.next_round_num)),
             || Ok(self.round_num + F::from(1)),
         )?;
-        next_round_num.inputize(cs.namespace(|| format!("round_num_{}", self.next_round_num)));
+        next_round_num
+            .inputize(cs.namespace(|| format!("output_round_num_{}", self.next_round_num)));
 
         // circuit poseidon
         let data: Vec<AllocatedNum<F>> = vec![

@@ -120,8 +120,6 @@ pub struct DFAStepCircuit<F: PrimeField> {
     prev_hash: F,
     next_hash: F,
     round_num: F,
-    bool_out: F,
-    next_bool_out: F,
     pc: PoseidonConstants<F, typenum::U2>,
 }
 
@@ -138,8 +136,6 @@ impl<F: PrimeField> DFAStepCircuit<F> {
         hash_i: F,
         hash_i_plus_1: F,
         round_i: F,
-        bool_out_i: F,
-        bool_out_i_plus_1: F,
         pcs: PoseidonConstants<F, typenum::U2>,
     ) -> Self {
         // todo check wits line up with the non det advice
@@ -158,8 +154,6 @@ impl<F: PrimeField> DFAStepCircuit<F> {
             prev_hash: hash_i,
             next_hash: hash_i_plus_1,
             round_num: round_i,
-            bool_out: bool_out_i,
-            next_bool_out: bool_out_i_plus_1,
             pc: pcs,
         };
 
@@ -172,24 +166,22 @@ where
     F: PrimeField,
 {
     fn arity(&self) -> usize {
-        1 // TODO CHECK
+        4
     }
 
     // z = [state, char, hash, round_num, bool_out]
     fn output(&self, z: &[F]) -> Vec<F> {
         // sanity check
         assert_eq!(z[0], self.current_state);
-        //assert_eq!(z[0], self.current_char);
-        //assert_eq!(z[2], self.prev_hash);
-        //assert_eq!(z[3], self.round_num);
-        //assert_eq!(z[4], self.bool_out);
+        assert_eq!(z[1], self.current_char);
+        assert_eq!(z[2], self.prev_hash);
+        assert_eq!(z[3], self.round_num);
 
         vec![
             self.next_state,
-            //self.next_char,
-            //   self.next_hash,
-            //   self.round_num + F::from(1),
-            //   self.next_bool_out,
+            self.next_char,
+            self.next_hash,
+            self.round_num + F::from(1),
         ]
     }
 
@@ -209,19 +201,20 @@ where
         G2: Group<Base = <G1 as Group>::Scalar>,
     {
         // inputs
-        //let current_char = z[0].clone();
         let current_state = z[0].clone();
-        //let prev_hash = z[2].clone();
-        //let round_num = z[3].clone();
+        let current_char = z[1].clone();
+        let prev_hash = z[2].clone();
+        let round_num = z[3].clone();
+
         //println!("current_state: {:#?}", current_state.get_value());
         //println!("current_char: {:#?}", current_char.get_value());
         //println!("prev_hash: {:#?}", prev_hash.get_value());
         //println!("round_num: {:#?}", round_num.get_value());
 
         // ouputs
-        //let mut next_state = None;
+        let mut next_state = None;
         //let mut next_hash = None;
-        //let mut next_round_num = None;
+        let mut next_round_num = None;
         //let mut bool_out = None;
 
         let f_mod = get_modulus::<F>(); // TODO
@@ -260,54 +253,46 @@ where
                         Ok({
                             let i_val = self.vals.as_ref().expect("missing values").get(s).unwrap();
                             let ff_val = int_to_ff(i_val.as_pf().into());
-                            println!("value : {} -> {:?} ({})", s, ff_val, i_val);
+                            //println!("value : {} -> {:?} ({})", s, ff_val, i_val);
                             ff_val
                         })
                     };
-                    println!("var: {}, public: {}", s, public);
-                    let v = if public {
-                        //cs.alloc_input(name_f, val_f)?
-                        cs.alloc(name_f, val_f)? // we don't care what circ thinks is public,
-                                                 // as we are lying to circ anyway
-                    } else {
-                        cs.alloc(name_f, val_f)?
-                    };
-                    vars.insert(i, v);
-
+                    //println!("var: {}, public: {}", s, public);
+                    //cs.alloc(name_f, val_f)? // we don't care what circ thinks is public,
+                    // as we are lying to circ anyway
+                    //vars.insert(i, v);
                     // inputs
-                    /*if s.starts_with("char") {
+                    if s.starts_with("char") {
                         let alloc_v = current_char.clone(); //AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
                                                             //assert_eq!(ff_val, current_char.get_value().unwrap()); //current_char = Some(alloc_v); //.get_variable();
                         vars.insert(i, alloc_v.get_variable());
                     } else if s.starts_with("current_state") {
                         let alloc_v = current_state.clone(); //AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
-                        //assert_eq!(val_f, current_state); //current_state = alloc_v.get_variable();
+                                                             //assert_eq!(val_f, current_state); //current_state = alloc_v.get_variable();
                         vars.insert(i, alloc_v.get_variable());
                     } else if s.starts_with("round_num") {
                         let alloc_v = round_num.clone(); //AllocatedNum::inputize(cs.namespace(name_f), val_f)?;
                                                          //assert_eq!(val_f, round_num); //round_num = alloc_v.get_variable();
                         vars.insert(i, alloc_v.get_variable());
+
                     // outputs
-                    } else */
-                    /* if s.starts_with("next_state") {
+                    } else if s.starts_with("next_state") {
                         let alloc_v = AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
                         next_state = Some(alloc_v); //.get_variable();
                         vars.insert(i, next_state.clone().unwrap().get_variable());
-                    } else if s.starts_with("bool_out") {
+                    } else if s.starts_with("next_round_num") {
                         let alloc_v = AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
-
-                        alloc_v.inputize(cs.namespace(|| "output bool"))?;
-                        bool_out = Some(alloc_v); //.get_variable();
-                        vars.insert(i, bool_out.clone().unwrap().get_variable());
+                        next_round_num = Some(alloc_v); //.get_variable();
+                        vars.insert(i, next_round_num.clone().unwrap().get_variable());
 
                     // intermediate (in circ) wits
-                    } else {*/
-                    //let alloc_v = AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
-                    //let v = alloc_v.get_variable();
-                    //vars.insert(i, v);
-                    // }
+                    } else {
+                        let alloc_v = AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
+                        let v = alloc_v.get_variable();
+                        vars.insert(i, v);
+                    }
                 } else {
-                    println!("drop dead var: {}", s);
+                    //println!("drop dead var: {}", s);
                 }
             }
         }
@@ -337,41 +322,30 @@ where
         // line 31 ish
 
         // for nova passing (new inputs from prover)
-        let next_state =
-            AllocatedNum::alloc(cs.namespace(|| "next_state"), || Ok(self.next_state))?;
-        /*         let next_round_num = AllocatedNum::alloc(cs.namespace(|| "round_num_{}"), || {
-                    Ok(self.round_num + F::from(1))
-                })?;
-                next_round_num.inputize(cs.namespace(|| "output_round_num_{}"));
-        */
+        let next_char = AllocatedNum::alloc(cs.namespace(|| "next_char"), || Ok(self.next_char))?;
         // circuit poseidon
-        /*let data: Vec<AllocatedNum<F>> = vec![
+        let data: Vec<AllocatedNum<F>> = vec![
             prev_hash, //.unwrap(), //AllocatedNum::alloc(cs.namespace(|| "prev_hash"), || Ok(self.current_char)).unwrap(),
             current_char,
         ];
 
         let next_hash = poseidon_hash(cs, data, &self.pc).expect("poseidon hashing failed");
 
-        println!(
-            "hash out in synthesize {:#?}",
-            next_hash.clone().get_value(), //.unwrap()
-        );
-        */
+        println!("hash out: {:#?}", next_hash.clone().get_value());
 
-        // assert_eq!(expected, out.get_value().unwrap()); //get_value().unwrap());
+        //assert_eq!(expected, out.get_value().unwrap()); //get_value().unwrap());
 
-        println!(
+        debug!(
             "done with synth: {} vars {} cs",
             vars.len(),
             self.constraints.len()
         );
 
         Ok(vec![
-            next_state, //.unwrap(),
-                       //next_char.clone(),
-                       // next_char.clone(), //next_hash,
-                       // next_char.clone(), // next_round_num,
-                       // next_char.clone(), //bool_out.unwrap(),
+            next_state.unwrap(),
+            next_char, //next_char.clone(),
+            next_hash, // next_char.clone(), //next_hash,
+            next_round_num.unwrap(),
         ])
     }
 }

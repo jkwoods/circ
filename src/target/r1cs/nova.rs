@@ -331,7 +331,6 @@ where
         let mut ns = cs.namespace(|| "poseidon hash ns");
         let next_hash = {
             let mut sponge = SpongeCircuit::new_with_constants(&self.pc, Mode::Simplex);
-            //let mut cs = TestConstraintSystem::<Fr>::new();
             let acc = &mut ns;
 
             sponge.start(
@@ -353,15 +352,11 @@ where
 
             Elt::ensure_allocated(&output[0], &mut ns.namespace(|| "ensure allocated"), true)?
         };
-        /*
-        let data: Vec<AllocatedNum<F>> = vec![
-                    prev_hash, //.unwrap(), //AllocatedNum::alloc(cs.namespace(|| "prev_hash"), || Ok(self.current_char)).unwrap(),
-                    current_char,
-                ];
 
-                let next_hash = poseidon_hash(cs, data, &self.pc).expect("poseidon hashing failed");
-        */
-        println!("hash out: {:#?}", next_hash.clone().get_value());
+        // this line for TESTING ONLY; evil peice of code that could fuck things up
+        //let next_hash = AllocatedNum::alloc(ns, || Ok(self.next_hash))?;
+
+        //println!("hash out: {:#?}", next_hash.clone().get_value());
 
         //assert_eq!(expected, out.get_value().unwrap()); //get_value().unwrap());
 

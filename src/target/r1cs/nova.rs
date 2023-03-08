@@ -14,8 +14,11 @@ use generic_array::typenum;
 use gmp_mpfr_sys::gmp::limb_t;
 use log::debug;
 use neptune::{
-    circuit::poseidon_hash,
+    circuit2::Elt,
     poseidon::{Arity, HashMode, Poseidon, PoseidonConstants},
+    sponge::api::{IOPattern, SpongeAPI, SpongeOp},
+    sponge::circuit::SpongeCircuit,
+    sponge::vanilla::{Mode, Sponge, SpongeTrait},
     Strength,
 };
 use nova_snark::{
@@ -253,7 +256,7 @@ where
                         Ok({
                             let i_val = self.vals.as_ref().expect("missing values").get(s).unwrap();
                             let ff_val = int_to_ff(i_val.as_pf().into());
-                            //println!("value : {} -> {:?} ({})", s, ff_val, i_val);
+                            //        println!("value : {} -> {:?} ({})", s, ff_val, i_val);
                             ff_val
                         })
                     };
@@ -262,6 +265,7 @@ where
                     // as we are lying to circ anyway
                     //vars.insert(i, v);
                     // inputs
+
                     if s.starts_with("char") {
                         let alloc_v = current_char.clone(); //AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
                                                             //assert_eq!(ff_val, current_char.get_value().unwrap()); //current_char = Some(alloc_v); //.get_variable();
@@ -274,7 +278,6 @@ where
                         let alloc_v = round_num.clone(); //AllocatedNum::inputize(cs.namespace(name_f), val_f)?;
                                                          //assert_eq!(val_f, round_num); //round_num = alloc_v.get_variable();
                         vars.insert(i, alloc_v.get_variable());
-
                     // outputs
                     } else if s.starts_with("next_state") {
                         let alloc_v = AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
@@ -303,34 +306,61 @@ where
                 |z| lc_to_bellman::<F, CS>(&vars, b, z),
                 |z| lc_to_bellman::<F, CS>(&vars, c, z),
             );
-
-            /*            let z = LinearCombination::zero();
-                      println!(
-                          "i= {:#?}, a= {:#?} -> {:#?}, b= {:#?} -> {:#?}, c= {:#?} -> {:#?}",
-                          i,
-                          a,
-                          lc_to_bellman::<F, CS>(&vars, a, z.clone()),
-                          b,
-                          lc_to_bellman::<F, CS>(&vars, b, z.clone()),
-                          c,
-                          lc_to_bellman::<F, CS>(&vars, c, z.clone()),
-                      );
-            */
         }
-
+        /*
+                    //        let z = LinearCombination::zero();
+                    println!(
+                        "i= {:#?}, a= {:#?}, b= {:#?}, c= {:#?}",
+                        i,
+                        a,
+                        //            lc_to_bellman::<F, CS>(&vars, a, z.clone()),
+                        b,
+                        //             lc_to_bellman::<F, CS>(&vars, b, z.clone()),
+                        c,
+                        //              lc_to_bellman::<F, CS>(&vars, c, z.clone()),
+                    );
+                }
+        */
         // https://github.com/zkcrypto/bellman/blob/2759d930622a7f18b83a905c9f054d52a0bbe748/src/gadgets/num.rs,
         // line 31 ish
 
         // for nova passing (new inputs from prover)
         let next_char = AllocatedNum::alloc(cs.namespace(|| "next_char"), || Ok(self.next_char))?;
+
         // circuit poseidon
+        let mut ns = cs.namespace(|| "poseidon hash ns");
+        let next_hash = {
+            let mut sponge = SpongeCircuit::new_with_constants(&self.pc, Mode::Simplex);
+            //let mut cs = TestConstraintSystem::<Fr>::new();
+            let acc = &mut ns;
+
+            sponge.start(
+                IOPattern(vec![SpongeOp::Absorb(2), SpongeOp::Squeeze(1)]),
+                None,
+                acc,
+            );
+
+            SpongeAPI::absorb(
+                &mut sponge,
+                2,
+                &[Elt::Allocated(prev_hash), Elt::Allocated(current_char)],
+                acc,
+            );
+
+            let output = SpongeAPI::squeeze(&mut sponge, 1, acc);
+
+            sponge.finish(acc).unwrap();
+
+            Elt::ensure_allocated(&output[0], &mut ns.namespace(|| "ensure allocated"), true)?
+        };
+        /*
         let data: Vec<AllocatedNum<F>> = vec![
-            prev_hash, //.unwrap(), //AllocatedNum::alloc(cs.namespace(|| "prev_hash"), || Ok(self.current_char)).unwrap(),
-            current_char,
-        ];
+                    prev_hash, //.unwrap(), //AllocatedNum::alloc(cs.namespace(|| "prev_hash"), || Ok(self.current_char)).unwrap(),
+                    current_char,
+                ];
 
-        let next_hash = poseidon_hash(cs, data, &self.pc).expect("poseidon hashing failed");
-
+                let next_hash = poseidon_hash(cs, data, &self.pc).expect("poseidon hashing failed");
+        */
         println!("hash out: {:#?}", next_hash.clone().get_value());
 
         //assert_eq!(expected, out.get_value().unwrap()); //get_value().unwrap());
@@ -343,8 +373,8 @@ where
 
         Ok(vec![
             next_state.unwrap(),
-            next_char, //next_char.clone(),
-            next_hash, // next_char.clone(), //next_hash,
+            next_char,
+            next_hash,
             next_round_num.unwrap(),
         ])
     }

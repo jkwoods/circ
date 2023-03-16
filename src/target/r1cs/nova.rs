@@ -266,11 +266,11 @@ where
                     //vars.insert(i, v);
                     // inputs
 
-                    if s.starts_with("char") {
+                    if s.starts_with("char_0") {
                         let alloc_v = current_char.clone(); //AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
                                                             //assert_eq!(ff_val, current_char.get_value().unwrap()); //current_char = Some(alloc_v); //.get_variable();
                         vars.insert(i, alloc_v.get_variable());
-                    } else if s.starts_with("current_state") {
+                    } else if s.starts_with("state_0") {
                         let alloc_v = current_state.clone(); //AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
                                                              //assert_eq!(val_f, current_state); //current_state = alloc_v.get_variable();
                         vars.insert(i, alloc_v.get_variable());
@@ -279,7 +279,7 @@ where
                                                          //assert_eq!(val_f, round_num); //round_num = alloc_v.get_variable();
                         vars.insert(i, alloc_v.get_variable());
                     // outputs
-                    } else if s.starts_with("next_state") {
+                    } else if s.starts_with("state_1") {
                         let alloc_v = AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
                         next_state = Some(alloc_v); //.get_variable();
                         vars.insert(i, next_state.clone().unwrap().get_variable());

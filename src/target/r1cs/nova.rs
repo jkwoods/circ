@@ -116,14 +116,12 @@ pub struct DFAStepCircuit<F: PrimeField> {
     public_idxs: HashSet<usize>,
     constraints: Vec<(Lc, Lc, Lc)>,
     vals: Option<FxHashMap<String, Value>>,
-    current_state: F,
-    next_state: F,
-    current_char: F,
-    next_char: F,
-    prev_hash: F,
-    next_hash: F,
-    round_num: F,
+    batch_size: usize,
+    states: Vec<F>,
+    chars: Vec<F>,
+    hashes: Vec<F>,
     pc: PoseidonConstants<F, typenum::U2>,
+    nlookup: bool,
 }
 
 // note that this will generate a single round, and no witnesses, unlike nova example code
@@ -132,17 +130,22 @@ impl<F: PrimeField> DFAStepCircuit<F> {
     pub fn new(
         r1cs: &R1cs<String>,
         wits: Option<FxHashMap<String, Value>>,
-        state_i: F,
-        state_i_plus_1: F,
-        char_i: F,
-        char_i_plus_1: F,
-        hash_i: F,
-        hash_i_plus_1: F,
-        round_i: F,
+        states: Vec<F>,
+        chars: Vec<F>,
+        hashes: Vec<F>,
+        batch_size: usize,
         pcs: PoseidonConstants<F, typenum::U2>,
+        nlookup: bool,
     ) -> Self {
         // todo check wits line up with the non det advice
 
+        if wits.is_some() {
+            assert_eq!(chars.len(), batch_size + 1);
+            assert_eq!(states.len(), batch_size + 1);
+            assert_eq!(hashes.len(), batch_size + 1);
+            //assert!(hashes.is_some() || nlookup); // no hashes -> nlookup
+            // we only use nlookup commit w/nlookup
+        }
         let circuit = DFAStepCircuit {
             modulus: r1cs.modulus.clone(),
             idxs_signals: r1cs.idxs_signals.clone(),
@@ -150,14 +153,12 @@ impl<F: PrimeField> DFAStepCircuit<F> {
             public_idxs: r1cs.public_idxs.clone(),
             constraints: r1cs.constraints.clone(),
             vals: wits,
-            current_state: state_i,
-            next_state: state_i_plus_1,
-            current_char: char_i,
-            next_char: char_i_plus_1,
-            prev_hash: hash_i,
-            next_hash: hash_i_plus_1,
-            round_num: round_i,
+            batch_size: batch_size,
+            states: states,
+            chars: chars,
+            hashes: hashes,
             pc: pcs,
+            nlookup: nlookup,
         };
 
         return circuit;
@@ -169,22 +170,25 @@ where
     F: PrimeField,
 {
     fn arity(&self) -> usize {
-        4
+        3
     }
 
     // z = [state, char, hash, round_num, bool_out]
     fn output(&self, z: &[F]) -> Vec<F> {
         // sanity check
-        assert_eq!(z[0], self.current_state);
-        assert_eq!(z[1], self.current_char);
-        assert_eq!(z[2], self.prev_hash);
-        assert_eq!(z[3], self.round_num);
+        assert_eq!(z[0], self.states[0]); // "current state"
+        assert_eq!(z[1], self.chars[0]);
+
+        //let mut next_hash = F::from(0);
+        //if self.hashes.is_some() {
+        assert_eq!(z[2], self.hashes[0]);
+        //    next_hash = self.hashes.as_ref().unwrap()[self.batch_size];
+        //}
 
         vec![
-            self.next_state,
-            self.next_char,
-            self.next_hash,
-            self.round_num + F::from(1),
+            self.states[self.batch_size], // "next state"
+            self.chars[self.batch_size],
+            self.hashes[self.batch_size], //next_hash,
         ]
     }
 
@@ -204,21 +208,17 @@ where
         G2: Group<Base = <G1 as Group>::Scalar>,
     {
         // inputs
-        let current_state = z[0].clone();
-        let current_char = z[1].clone();
-        let prev_hash = z[2].clone();
-        let round_num = z[3].clone();
+        let state_0 = z[0].clone();
+        let char_0 = z[1].clone();
+        let hash_0 = z[2].clone();
 
         //println!("current_state: {:#?}", current_state.get_value());
         //println!("current_char: {:#?}", current_char.get_value());
         //println!("prev_hash: {:#?}", prev_hash.get_value());
-        //println!("round_num: {:#?}", round_num.get_value());
 
         // ouputs
-        let mut next_state = None;
+        //let mut next_state = None;
         //let mut next_hash = None;
-        let mut next_round_num = None;
-        //let mut bool_out = None;
 
         let f_mod = get_modulus::<F>(); // TODO
 
@@ -264,9 +264,9 @@ where
                     //cs.alloc(name_f, val_f)? // we don't care what circ thinks is public,
                     // as we are lying to circ anyway
                     //vars.insert(i, v);
-                    // inputs
 
-                    if s.starts_with("char_0") {
+                    // inputs
+                    /*            if s.starts_with("char_0") {
                         let alloc_v = current_char.clone(); //AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
                                                             //assert_eq!(ff_val, current_char.get_value().unwrap()); //current_char = Some(alloc_v); //.get_variable();
                         vars.insert(i, alloc_v.get_variable());
@@ -274,10 +274,7 @@ where
                         let alloc_v = current_state.clone(); //AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
                                                              //assert_eq!(val_f, current_state); //current_state = alloc_v.get_variable();
                         vars.insert(i, alloc_v.get_variable());
-                    } else if s.starts_with("round_num") {
-                        let alloc_v = round_num.clone(); //AllocatedNum::inputize(cs.namespace(name_f), val_f)?;
-                                                         //assert_eq!(val_f, round_num); //round_num = alloc_v.get_variable();
-                        vars.insert(i, alloc_v.get_variable());
+
                     // outputs
                     } else if s.starts_with("state_1") {
                         let alloc_v = AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
@@ -287,13 +284,24 @@ where
                         let alloc_v = AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
                         next_round_num = Some(alloc_v); //.get_variable();
                         vars.insert(i, next_round_num.clone().unwrap().get_variable());
-
+                    */
+                    // sumcheck hashes
+                    /*
+                    if s.starts_with("nl_claim_r") {
+                        hash_circuit(ns: &mut CS, absorbs: u32, s: &[Elt], pc: &PoseidonConstants<F, typenum::U2>)
+                    } else if s.starts_with("nl_sc_r_") {
+                            hash_circuit(ns: &mut CS, absorbs: u32, s: &[Elt], pc: &PoseidonConstants<F, typenum::U2>)
+                    */
                     // intermediate (in circ) wits
-                    } else {
+                    /*                    if s.starts_with(&format!("state_{}", self.batch_size)) {
                         let alloc_v = AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
-                        let v = alloc_v.get_variable();
-                        vars.insert(i, v);
-                    }
+                        next_state = Some(alloc_v); //.get_variable();
+                        vars.insert(i, next_state.clone().unwrap().get_variable());
+                    } else {*/
+                    let alloc_v = AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
+                    let v = alloc_v.get_variable();
+                    vars.insert(i, v);
+                    //}
                 } else {
                     //println!("drop dead var: {}", s);
                 }
@@ -324,39 +332,64 @@ where
         // https://github.com/zkcrypto/bellman/blob/2759d930622a7f18b83a905c9f054d52a0bbe748/src/gadgets/num.rs,
         // line 31 ish
 
-        // for nova passing (new inputs from prover)
-        let next_char = AllocatedNum::alloc(cs.namespace(|| "next_char"), || Ok(self.next_char))?;
+        // for nova passing (new inputs from prover, not provided by circ prover, so to speak)
+        let char_b = AllocatedNum::alloc(cs.namespace(|| "next_char"), || {
+            Ok(self.chars[self.batch_size])
+        })?;
 
-        // circuit poseidon
+        let next_state = AllocatedNum::alloc(cs.namespace(|| "next_state"), || {
+            Ok(self.states[self.batch_size])
+        })?;
+
+        // hash commit
+        let mut next_hash = hash_0.clone(); // TODO get rid
+                                            //if self.hashes.is_some() {
+                                            // we want a hash commit, and not nlookup doc commit
+                                            // circuit poseidon
         let mut ns = cs.namespace(|| "poseidon hash ns");
-        let next_hash = {
-            let mut sponge = SpongeCircuit::new_with_constants(&self.pc, Mode::Simplex);
-            let acc = &mut ns;
 
-            sponge.start(
-                IOPattern(vec![SpongeOp::Absorb(2), SpongeOp::Squeeze(1)]),
-                None,
-                acc,
-            );
+        let curr_char = char_0;
 
-            SpongeAPI::absorb(
-                &mut sponge,
-                2,
-                &[Elt::Allocated(prev_hash), Elt::Allocated(current_char)],
-                acc,
-            );
+        for i in 0..(self.batch_size) {
+            println!("i {:#?}", i);
+            next_hash = {
+                let mut sponge = SpongeCircuit::new_with_constants(&self.pc, Mode::Simplex);
+                let acc = &mut ns;
 
-            let output = SpongeAPI::squeeze(&mut sponge, 1, acc);
+                sponge.start(
+                    IOPattern(vec![SpongeOp::Absorb(2), SpongeOp::Squeeze(1)]),
+                    None,
+                    acc,
+                );
 
-            sponge.finish(acc).unwrap();
+                SpongeAPI::absorb(
+                    &mut sponge,
+                    2,
+                    &[
+                        Elt::Allocated(next_hash.clone()),
+                        Elt::Allocated(curr_char.clone()),
+                    ], // TODO is
+                    // this
+                    // "connected"? get rid clones
+                    acc,
+                );
 
-            Elt::ensure_allocated(&output[0], &mut ns.namespace(|| "ensure allocated"), true)?
-        };
+                let output = SpongeAPI::squeeze(&mut sponge, 1, acc);
+
+                sponge.finish(acc).unwrap();
+
+                Elt::ensure_allocated(&output[0], &mut ns.namespace(|| "ensure allocated"), true)?
+            };
+        }
+        //} else { // need to do sumcheck hashes for nlookup
+        //}
 
         // this line for TESTING ONLY; evil peice of code that could fuck things up
-        //let next_hash = AllocatedNum::alloc(ns, || Ok(self.next_hash))?;
+        /*let next_hash = AllocatedNum::alloc(cs.namespace(|| "next_hash"), || {
+            Ok(self.hashes.as_ref().unwrap()[self.batch_size])
+        })?;*/
 
-        //println!("hash out: {:#?}", next_hash.clone().get_value());
+        println!("hash out: {:#?}", next_hash.clone().get_value());
 
         //assert_eq!(expected, out.get_value().unwrap()); //get_value().unwrap());
 
@@ -366,11 +399,6 @@ where
             self.constraints.len()
         );
 
-        Ok(vec![
-            next_state.unwrap(),
-            next_char,
-            next_hash,
-            next_round_num.unwrap(),
-        ])
+        Ok(vec![next_state, char_b, next_hash])
     }
 }

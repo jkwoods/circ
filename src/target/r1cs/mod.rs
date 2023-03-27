@@ -1,5 +1,5 @@
 //! Rank 1 Constraint Systems
-
+#![allow(missing_docs)]
 use circ_fields::{FieldT, FieldV};
 use fxhash::{FxHashMap as HashMap, FxHashSet as HashSet};
 use log::{debug, trace};
@@ -140,9 +140,10 @@ pub struct R1cs {
 /// An assembled R1CS relation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct R1csFinal {
-    field: FieldT,
-    vars: Vec<Var>,
-    constraints: Vec<(Lc, Lc, Lc)>,
+    // JESS PUB TODO
+    pub field: FieldT,
+    pub vars: Vec<Var>,
+    pub constraints: Vec<(Lc, Lc, Lc)>,
     names: HashMap<Var, String>,
 
     commitments: Vec<Vec<Var>>,
@@ -167,7 +168,8 @@ impl Var {
         };
         Var(ty_repr << Self::NUMBER_BITS | number)
     }
-    fn ty(&self) -> VarType {
+    pub fn ty(&self) -> VarType {
+        // JESS PUB
         match self.0 >> Self::NUMBER_BITS {
             0b000 => VarType::Inst,
             0b001 => VarType::CWit,
@@ -568,9 +570,10 @@ pub enum SigTy {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 /// A linear combination
 pub struct Lc {
-    modulus: FieldT,
-    constant: FieldV,
-    monomials: HashMap<Var, FieldV>,
+    // JESS PUB TODO
+    pub modulus: FieldT,
+    pub constant: FieldV,
+    pub monomials: HashMap<Var, FieldV>,
 }
 
 impl Lc {

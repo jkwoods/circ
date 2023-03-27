@@ -22,7 +22,7 @@ use super::{wit_comp::StagedWitCompEvaluator, Lc, ProverData, Var, VarType, Veri
 use crate::ir::term::Value;
 
 /// Convert a (rug) integer to a prime field element.
-pub fn int_to_ff<F: PrimeField>(i: Integer) -> F {
+pub(super) fn int_to_ff<F: PrimeField>(i: Integer) -> F {
     let mut accumulator = F::from(0);
     let limb_bits = (std::mem::size_of::<limb_t>() as u64) << 3;
     let limb_base = F::from(2).pow_vartime([limb_bits]);
@@ -36,7 +36,7 @@ pub fn int_to_ff<F: PrimeField>(i: Integer) -> F {
 
 /// Convert one our our linear combinations to a bellman linear combination.
 /// Takes a zero linear combination. We could build it locally, but bellman provides one, so...
-pub fn lc_to_bellman<F: PrimeField, CS: ConstraintSystem<F>>(
+pub(super) fn lc_to_bellman<F: PrimeField, CS: ConstraintSystem<F>>(
     vars: &HashMap<Var, Variable>,
     lc: &Lc,
     zero_lc: LinearCombination<F>,
@@ -56,7 +56,7 @@ pub fn lc_to_bellman<F: PrimeField, CS: ConstraintSystem<F>>(
 }
 
 // hmmm... this should work essentially all the time, I think
-pub fn get_modulus<F: Field + PrimeField>() -> Integer {
+pub(super) fn get_modulus<F: Field + PrimeField>() -> Integer {
     let neg_1_f = -F::one();
     let p_lsf: Integer = Integer::from_digits(neg_1_f.to_repr().as_ref(), Order::Lsf) + 1;
     let p_msf: Integer = Integer::from_digits(neg_1_f.to_repr().as_ref(), Order::Msf) + 1;

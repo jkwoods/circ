@@ -140,9 +140,9 @@ impl<F: PrimeField> DFAStepCircuit<F> {
         // todo check wits line up with the non det advice
 
         if wits.is_some() {
-            assert_eq!(chars.len(), batch_size + 1);
-            assert_eq!(states.len(), batch_size + 1);
-            assert_eq!(hashes.len(), batch_size + 1);
+            assert_eq!(chars.len(), 2); // only need in/out for all of these
+            assert_eq!(states.len(), 2);
+            assert_eq!(hashes.len(), 2);
             //assert!(hashes.is_some() || nlookup); // no hashes -> nlookup
             // we only use nlookup commit w/nlookup
         }
@@ -186,9 +186,9 @@ where
         //}
 
         vec![
-            self.states[self.batch_size], // "next state"
-            self.chars[self.batch_size],
-            self.hashes[self.batch_size], //next_hash,
+            self.states[1], // "next state"
+            self.chars[1],
+            self.hashes[1], //next_hash,
         ]
     }
 
@@ -217,9 +217,16 @@ where
         //println!("prev_hash: {:#?}", prev_hash.get_value());
 
         // ouputs
-        //let mut next_state = None;
+        let mut last_state = None;
         //let mut next_hash = None;
 
+        // for nova passing (new inputs from prover, not provided by circ prover, so to speak)
+        let last_char = AllocatedNum::alloc(cs.namespace(|| "last_char"), || Ok(self.chars[1]))?;
+
+        // intms
+        let mut char_vars = vec![None; self.batch_size];
+
+        // convert
         let f_mod = get_modulus::<F>(); // TODO
 
         assert_eq!(
@@ -266,44 +273,108 @@ where
                     //vars.insert(i, v);
 
                     // inputs
-                    /*            if s.starts_with("char_0") {
-                        let alloc_v = current_char.clone(); //AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
-                                                            //assert_eq!(ff_val, current_char.get_value().unwrap()); //current_char = Some(alloc_v); //.get_variable();
+                    if s.starts_with("char_0") {
+                        let alloc_v = char_0.clone(); //AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
+                                                      //assert_eq!(ff_val, current_char.get_value().unwrap()); //current_char = Some(alloc_v); //.get_variable();
                         vars.insert(i, alloc_v.get_variable());
+                        char_vars[0] = Some(alloc_v);
                     } else if s.starts_with("state_0") {
-                        let alloc_v = current_state.clone(); //AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
-                                                             //assert_eq!(val_f, current_state); //current_state = alloc_v.get_variable();
+                        let alloc_v = state_0.clone(); //AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
+                                                       //assert_eq!(val_f, current_state); //current_state = alloc_v.get_variable();
                         vars.insert(i, alloc_v.get_variable());
 
                     // outputs
-                    } else if s.starts_with("state_1") {
+                    } else if s.starts_with(&format!("state_{}", self.batch_size)) {
                         let alloc_v = AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
-                        next_state = Some(alloc_v); //.get_variable();
-                        vars.insert(i, next_state.clone().unwrap().get_variable());
-                    } else if s.starts_with("next_round_num") {
-                        let alloc_v = AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
-                        next_round_num = Some(alloc_v); //.get_variable();
-                        vars.insert(i, next_round_num.clone().unwrap().get_variable());
-                    */
+                        last_state = Some(alloc_v); //.get_variable();
+                        vars.insert(i, last_state.clone().unwrap().get_variable());
+
                     // sumcheck hashes
+                    } else if s.starts_with("nl_claim_r") {
+                        println!("NL CLAIM R hook");
                     /*
-                    if s.starts_with("nl_claim_r") {
-                        hash_circuit(ns: &mut CS, absorbs: u32, s: &[Elt], pc: &PoseidonConstants<F, typenum::U2>)
-                    } else if s.starts_with("nl_sc_r_") {
-                            hash_circuit(ns: &mut CS, absorbs: u32, s: &[Elt], pc: &PoseidonConstants<F, typenum::U2>)
+                    // isn't hit if no claim var (todo
+                    // check)
+                    // add hash circuit
+                    let mut ns = cs.namespace(name_f); //|| "sumcheck hash ns");
+                    let new_pos = {
+                        let mut sponge =
+                            SpongeCircuit::new_with_constants(&self.pc, Mode::Simplex);
+                        let acc = &mut ns;
+
+                        sponge.start(
+                            IOPattern(vec![SpongeOp::Absorb(1), SpongeOp::Squeeze(1)]),
+                            None,
+                            acc,
+                        );
+
+                        //let temp_input = AllocatedNum::alloc(acc, || Ok(F::from(5 as u64)))?; // TODO!!
+
+                        //SpongeAPI::absorb(&mut sponge, 1, &[Elt::Allocated(temp_input)], acc);
+                        SpongeAPI::absorb(
+                            &mut sponge,
+                            1,
+                            &[Elt::num_from_fr::<CS>(F::from(300 as u64))], // this is some shit
+                            acc,
+                        );
+
+                        let output = SpongeAPI::squeeze(&mut sponge, 1, acc);
+
+                        sponge.finish(acc).unwrap();
+
+                        Elt::ensure_allocated(
+                            &output[0],
+                            &mut ns.namespace(|| "ensure allocated"), // name must be the same
+                            // (??)
+                            true,
+                        )?
+                    };
+
+                    //println!("sc hash {:#?}", new_pos);
+                    //let alloc_v = AllocatedNum::alloc(ns, || Ok(new_pos.get_value().unwrap()))?;
+
+                    // original var
+                    let alloc_v = AllocatedNum::alloc(ns, || Ok(new_pos.get_value().unwrap()))?;
+                    //let alloc_v = new_pos; // maybe equality constraint here instead?
+                    vars.insert(i, alloc_v.get_variable());
+
+                    println!("new pos: {:#?}", new_pos.clone().get_value());
+                    println!("alloc v: {:#?}", alloc_v.clone().get_value());
+
+                    cs.enforce(
+                        || format!("con{}", i),
+                        |z| z + alloc_v.get_variable(),
+                        |z| z + CS::one(),
+                        |z| z + new_pos.get_variable(),
+                    );
                     */
-                    // intermediate (in circ) wits
-                    /*                    if s.starts_with(&format!("state_{}", self.batch_size)) {
+                    } else if s.starts_with("nl_sc_r_") {
+
+                        // intermediate (in circ) wits
+                        /*  if s.starts_with(&format!("state_{}", self.batch_size)) {
+                            let alloc_v = AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
+                            next_state = Some(alloc_v); //.get_variable();
+                            vars.insert(i, next_state.clone().unwrap().get_variable());
+                        */
+                    } else if s.starts_with("char_") {
+                        // for hash commits
+                        // hash commit wits (TODO if)
                         let alloc_v = AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
-                        next_state = Some(alloc_v); //.get_variable();
-                        vars.insert(i, next_state.clone().unwrap().get_variable());
-                    } else {*/
-                    let alloc_v = AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
-                    let v = alloc_v.get_variable();
-                    vars.insert(i, v);
-                    //}
+                        let char_j = Some(alloc_v); //.get_variable();
+                        vars.insert(i, char_j.clone().unwrap().get_variable()); // messy TODO
+                                                                                // vars.insert(i, alloc_v.get_variable()); // TODO del (TESTING ONLY)
+
+                        let j = s.chars().nth(5).unwrap().to_digit(10).unwrap() as usize;
+                        if j < self.batch_size {
+                            char_vars[j] = char_j;
+                        } // don't add the last one
+                    } else {
+                        let alloc_v = AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
+                        let v = alloc_v.get_variable();
+                        vars.insert(i, v);
+                    }
                 } else {
-                    //println!("drop dead var: {}", s);
+                    println!("drop dead var: {}", s);
                 }
             }
         }
@@ -332,25 +403,14 @@ where
         // https://github.com/zkcrypto/bellman/blob/2759d930622a7f18b83a905c9f054d52a0bbe748/src/gadgets/num.rs,
         // line 31 ish
 
-        // for nova passing (new inputs from prover, not provided by circ prover, so to speak)
-        let char_b = AllocatedNum::alloc(cs.namespace(|| "next_char"), || {
-            Ok(self.chars[self.batch_size])
-        })?;
-
-        let next_state = AllocatedNum::alloc(cs.namespace(|| "next_state"), || {
-            Ok(self.states[self.batch_size])
-        })?;
-
         // hash commit
         let mut next_hash = hash_0.clone(); // TODO get rid
                                             //if self.hashes.is_some() {
                                             // we want a hash commit, and not nlookup doc commit
                                             // circuit poseidon
-        let mut ns = cs.namespace(|| "poseidon hash ns");
-
-        let curr_char = char_0;
 
         for i in 0..(self.batch_size) {
+            let mut ns = cs.namespace(|| format!("poseidon hash ns batch {}", i));
             println!("i {:#?}", i);
             next_hash = {
                 let mut sponge = SpongeCircuit::new_with_constants(&self.pc, Mode::Simplex);
@@ -362,12 +422,17 @@ where
                     acc,
                 );
 
+                println!(
+                    "Hashing {:#?} {:#?}",
+                    next_hash.clone().get_value(),
+                    char_vars[i].clone().unwrap().get_value()
+                );
                 SpongeAPI::absorb(
                     &mut sponge,
                     2,
                     &[
                         Elt::Allocated(next_hash.clone()),
-                        Elt::Allocated(curr_char.clone()),
+                        Elt::Allocated(char_vars[i].clone().unwrap()),
                     ], // TODO is
                     // this
                     // "connected"? get rid clones
@@ -399,6 +464,6 @@ where
             self.constraints.len()
         );
 
-        Ok(vec![next_state, char_b, next_hash])
+        Ok(vec![last_state.unwrap(), last_char, next_hash])
     }
 }

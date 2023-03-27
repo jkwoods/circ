@@ -292,77 +292,110 @@ where
                     // sumcheck hashes
                     } else if s.starts_with("nl_claim_r") {
                         println!("NL CLAIM R hook");
-                    /*
-                    // isn't hit if no claim var (todo
-                    // check)
-                    // add hash circuit
-                    let mut ns = cs.namespace(name_f); //|| "sumcheck hash ns");
-                    let new_pos = {
-                        let mut sponge =
-                            SpongeCircuit::new_with_constants(&self.pc, Mode::Simplex);
-                        let acc = &mut ns;
+                        //let mut ns = cs.namespace(name_f);
+                        // original var
+                        let alloc_v = AllocatedNum::alloc(cs.namespace(name_f), val_f)?; //Ok(new_pos.get_value().unwrap()))?;
+                                                                                         //let alloc_v = new_pos; // maybe equality constraint here instead?
+                        vars.insert(i, alloc_v.get_variable());
 
-                        sponge.start(
-                            IOPattern(vec![SpongeOp::Absorb(1), SpongeOp::Squeeze(1)]),
-                            None,
-                            acc,
+                        // isn't hit if no claim var
+                        // add hash circuit
+                        let mut ns = cs.namespace(|| "sumcheck hash ns"); // maybe we can just
+                                                                          // change this??
+                        let new_pos = {
+                            let mut sponge =
+                                SpongeCircuit::new_with_constants(&self.pc, Mode::Simplex);
+                            let acc = &mut ns;
+
+                            sponge.start(
+                                IOPattern(vec![SpongeOp::Absorb(1), SpongeOp::Squeeze(1)]),
+                                None,
+                                acc,
+                            );
+
+                            //let temp_input = AllocatedNum::alloc(acc, || Ok(F::from(5 as u64)))?; // TODO!!
+
+                            //SpongeAPI::absorb(&mut sponge, 1, &[Elt::Allocated(temp_input)], acc);
+                            SpongeAPI::absorb(
+                                &mut sponge,
+                                1,
+                                &[Elt::num_from_fr::<CS>(F::from(5 as u64))], // this is some shit
+                                acc,
+                            );
+
+                            let output = SpongeAPI::squeeze(&mut sponge, 1, acc);
+
+                            sponge.finish(acc).unwrap();
+
+                            Elt::ensure_allocated(
+                                &output[0],
+                                &mut ns.namespace(|| "ensure allocated"), // name must be the same
+                                // (??)
+                                true,
+                            )?
+                        };
+
+                        //println!("sc hash {:#?}", new_pos);
+                        //let alloc_v = AllocatedNum::alloc(ns, || Ok(new_pos.get_value().unwrap()))?;
+
+                        println!("new pos: {:#?}", new_pos.clone().get_value());
+                        println!("alloc v: {:#?}", alloc_v.clone().get_value());
+
+                        ns.enforce(
+                            || format!("eq con for claim_r"),
+                            |z| z + alloc_v.get_variable(),
+                            |z| z + CS::one(),
+                            |z| z + new_pos.get_variable(),
                         );
-
-                        //let temp_input = AllocatedNum::alloc(acc, || Ok(F::from(5 as u64)))?; // TODO!!
-
-                        //SpongeAPI::absorb(&mut sponge, 1, &[Elt::Allocated(temp_input)], acc);
-                        SpongeAPI::absorb(
-                            &mut sponge,
-                            1,
-                            &[Elt::num_from_fr::<CS>(F::from(300 as u64))], // this is some shit
-                            acc,
-                        );
-
-                        let output = SpongeAPI::squeeze(&mut sponge, 1, acc);
-
-                        sponge.finish(acc).unwrap();
-
-                        Elt::ensure_allocated(
-                            &output[0],
-                            &mut ns.namespace(|| "ensure allocated"), // name must be the same
-                            // (??)
-                            true,
-                        )?
-                    };
-
-                    //println!("sc hash {:#?}", new_pos);
-                    //let alloc_v = AllocatedNum::alloc(ns, || Ok(new_pos.get_value().unwrap()))?;
-
-                    // original var
-                    let alloc_v = AllocatedNum::alloc(ns, || Ok(new_pos.get_value().unwrap()))?;
-                    //let alloc_v = new_pos; // maybe equality constraint here instead?
-                    vars.insert(i, alloc_v.get_variable());
-
-                    println!("new pos: {:#?}", new_pos.clone().get_value());
-                    println!("alloc v: {:#?}", alloc_v.clone().get_value());
-
-                    cs.enforce(
-                        || format!("con{}", i),
-                        |z| z + alloc_v.get_variable(),
-                        |z| z + CS::one(),
-                        |z| z + new_pos.get_variable(),
-                    );
-                    */
                     } else if s.starts_with("nl_sc_r_") {
+                        // original var
+                        let alloc_v = AllocatedNum::alloc(cs.namespace(name_f), val_f)?; //Ok(new_pos.get_value().unwrap()))?;
+                        vars.insert(i, alloc_v.get_variable());
 
-                        // intermediate (in circ) wits
-                        /*  if s.starts_with(&format!("state_{}", self.batch_size)) {
-                            let alloc_v = AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
-                            next_state = Some(alloc_v); //.get_variable();
-                            vars.insert(i, next_state.clone().unwrap().get_variable());
-                        */
+                        // isn't hit if no sc round var
+                        // add hash circuit
+                        let r = s.chars().nth(8).unwrap().to_digit(10).unwrap() as u64; // BS!
+                        let mut ns = cs.namespace(|| format!("sumcheck round ns {}", r));
+                        let new_pos = {
+                            let mut sponge =
+                                SpongeCircuit::new_with_constants(&self.pc, Mode::Simplex);
+                            let acc = &mut ns;
+
+                            sponge.start(
+                                IOPattern(vec![SpongeOp::Absorb(1), SpongeOp::Squeeze(1)]),
+                                None,
+                                acc,
+                            );
+
+                            //let temp_input = AllocatedNum::alloc(acc, || Ok(F::from(5 as u64)))?; // TODO!!
+
+                            //SpongeAPI::absorb(&mut sponge, 1, &[Elt::Allocated(temp_input)], acc);
+                            SpongeAPI::absorb(
+                                &mut sponge,
+                                1,
+                                &[Elt::num_from_fr::<CS>(F::from(r))], // this is some shit
+                                acc,
+                            );
+
+                            let output = SpongeAPI::squeeze(&mut sponge, 1, acc);
+
+                            sponge.finish(acc).unwrap();
+
+                            Elt::ensure_allocated(
+                                &output[0],
+                                &mut ns.namespace(|| "ensure allocated"), // name must be the same
+                                // (??)
+                                true,
+                            )?
+                        };
+
+                    // intermediate (in circ) wits
                     } else if s.starts_with("char_") {
                         // for hash commits
                         // hash commit wits (TODO if)
                         let alloc_v = AllocatedNum::alloc(cs.namespace(name_f), val_f)?;
                         let char_j = Some(alloc_v); //.get_variable();
                         vars.insert(i, char_j.clone().unwrap().get_variable()); // messy TODO
-                                                                                // vars.insert(i, alloc_v.get_variable()); // TODO del (TESTING ONLY)
 
                         let j = s.chars().nth(5).unwrap().to_digit(10).unwrap() as usize;
                         if j < self.batch_size {

@@ -144,7 +144,7 @@ pub struct R1csFinal {
     pub field: FieldT,
     pub vars: Vec<Var>,
     pub constraints: Vec<(Lc, Lc, Lc)>,
-    names: HashMap<Var, String>,
+    pub names: HashMap<Var, String>,
 
     commitments: Vec<Vec<Var>>,
 }
